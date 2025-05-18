@@ -25,12 +25,12 @@ public class Company extends Thread {
      * @param senha - Senha da conta no AlphaBank
      * @param port  - Porta para o servidor que atenderá os carros
      */
-    public Company(String login, String senha, int port) {
+    public Company(String login, String senha) {
 
         this.senha = senha;
         contaCorrente = AlphaBank.criarConta(login, senha, 100000);
 
-        serverCompany = new ServerCompany(port, "Company");
+        serverCompany = new ServerCompany(4001, "Company");
         botPayment = new BotPaymentCompany(login);
         
         serverCompany.start();

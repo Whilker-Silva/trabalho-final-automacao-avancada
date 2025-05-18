@@ -6,7 +6,7 @@ public class BotPayment extends Thread{
 
     private ClientBank clientBank;
 
-    public BotPayment(String login) {
+    public BotPayment(int port, String login) {
         clientBank = new ClientBank(4000, login);
     }
 
