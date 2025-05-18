@@ -1,13 +1,9 @@
 package simulacao.banco;
 
-import java.io.InputStreamReader;
-import java.io.BufferedReader;
-import java.io.PrintWriter;
-import java.net.Socket;
+
 import utils.Server;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-
 import utils.Crypto;
 import utils.Json;
 
@@ -17,11 +13,11 @@ public class AlphaBank extends Thread {
     private Map<String, Account> listaContas;
     private ServerBank serverBank;
 
-    private AlphaBank() {        
+    private AlphaBank() {
         instancia = this;
         listaContas = new ConcurrentHashMap<>();
-        serverBank = new ServerBank(4000, "AlphaBank");   
-        this.start();     
+        serverBank = new ServerBank(4000, "AlphaBank");
+        this.start();
     }
 
     /**
@@ -36,8 +32,8 @@ public class AlphaBank extends Thread {
         return instancia;
     }
 
-    public static Account criarConta(String login, String senha){
-        return getInstancia().criarContaStatic(login, senha);
+    public static Account criarConta(String login, String senha, double saldoIncial) {
+        return getInstancia().criarContaStatic(login, senha, saldoIncial);
     }
 
     /**
@@ -46,13 +42,13 @@ public class AlphaBank extends Thread {
      * @param senha
      * @return instancia de ContaCorrente
      */
-    private synchronized Account criarContaStatic(String login, String senha) {
-        Account novaConta = new Account(login, senha, 1000);
+    private synchronized Account criarContaStatic(String login, String senha, double saldoIncial) {
+        Account novaConta = new Account(login, senha, saldoIncial);
         listaContas.put(login, novaConta);
         return novaConta;
     }
 
-    public static Account getConta(String login){
+    public static Account getConta(String login) {
         return getInstancia().getContaStatic(login);
     }
 
@@ -74,7 +70,6 @@ public class AlphaBank extends Thread {
         serverBank.start();
     }
 
-
     private class ServerBank extends Server {
 
         public ServerBank(int port, String name) {
@@ -82,33 +77,10 @@ public class AlphaBank extends Thread {
         }
 
         @Override
-        protected void serverCallback(Socket clientSocket) {
-
-            new Thread(() -> {
-                try (
-                        BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
-                        PrintWriter out = new PrintWriter(clientSocket.getOutputStream(), true)) {
-
-                    String msg;
-                    while ((msg = in.readLine()) != null) {
-                        Transacao transacao = Json.fromJson(Crypto.descriptografar(msg), Transacao.class);
-                        Thread transacaoThread = new Thread(transacao);
-                        transacaoThread.start();
-                    }
-                }
-
-                catch (Exception e) {
-                    System.err.println("Erro ao tratar cliente: " + e.getMessage());
-                }
-
-                finally {
-                    try {
-                        clientSocket.close();
-                    } catch (Exception e) {
-                        System.err.println("Erro ao fechar socket do cliente");
-                    }
-                }
-            }).start();
+        protected void processarMensagem(String msg) throws Exception {
+            Transacao transacao = Json.fromJson(Crypto.descriptografar(msg), Transacao.class);
+            Thread transacaoThread = new Thread(transacao);
+            transacaoThread.start();
         }
 
     }

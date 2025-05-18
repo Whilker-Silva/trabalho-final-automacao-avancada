@@ -1,5 +1,8 @@
 package utils;
 
+import java.io.BufferedReader;
+import java.io.InputStreamReader;
+import java.io.PrintWriter;
 import java.net.ServerSocket;
 import java.net.Socket;
 
@@ -56,5 +59,33 @@ public abstract class Server extends Thread {
         }
     }
 
-    protected abstract void serverCallback(Socket socket);
+    private void serverCallback(Socket socket) {
+
+        new Thread(() -> {
+            try (
+                    BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+                    PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
+
+                String msg;
+                while ((msg = in.readLine()) != null) {
+                   processarMensagem(msg);
+                }
+            }
+
+            catch (Exception e) {
+                System.err.println("Erro ao tratar cliente: " + e.getMessage());
+            }
+
+            finally {
+                try {
+                    socket.close();
+                } catch (Exception e) {
+                    System.err.println("Erro ao fechar socket do cliente");
+                }
+            }
+        }).start();
+
+    }
+
+    protected abstract void processarMensagem(String msg) throws Exception ;
 }

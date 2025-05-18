@@ -1,24 +1,23 @@
-package simulacao.Driver;
+package simulacao.driver;
 
 import simulacao.banco.AlphaBank;
 import simulacao.banco.Account;
 
-public class Driver extends Thread{
-    
+public class Driver extends Thread {
+
     private BotPaymentDriver botPayment;
     private Account contaCorrente;
-    private String senha;  
-    
+    private String senha;
+
     public Driver(String login, String senha) {
         this.senha = senha;
-        contaCorrente = AlphaBank.criarConta(login, senha);   
-        botPayment = new BotPaymentDriver(login);    
+        contaCorrente = AlphaBank.criarConta(login, senha, 0);
+        botPayment = new BotPaymentDriver(login);
         botPayment.start();
-    }    
+    }
 
-    public void abastacer(String destino, double valor){
-        // TODO
-        botPayment.solicitarTransferencias(contaCorrente.getLogin(), destino, valor, senha);
+    public void abastacer(String destino, double valor) {
+        botPayment.solicitarTransferencia(getLogin(), destino, valor, senha);
     }
 
     public String getLogin() {
@@ -29,6 +28,6 @@ public class Driver extends Thread{
     public void run() {
         // TODO Auto-generated method stub
         super.run();
-    }   
+    }
 
 }

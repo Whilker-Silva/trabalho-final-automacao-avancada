@@ -1,6 +1,6 @@
 package simulacao;
 
-import simulacao.Driver.Driver;
+import simulacao.driver.Driver;
 
 public class Main {
     public static void main(String[] args) {               
