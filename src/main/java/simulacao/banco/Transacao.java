@@ -36,12 +36,10 @@ public class Transacao implements Runnable {
 
     }
 
-    private synchronized void processarTransacao() {
+    private synchronized void processarTransacao() {        
 
-        AlphaBank banco = AlphaBank.getInstancia();
-
-        Account contaOrigem = banco.getConta(origem);
-        Account contaDestino = banco.getConta(destino);
+        Account contaOrigem = AlphaBank.getConta(origem);
+        Account contaDestino = AlphaBank.getConta(destino);
 
         if (!contaOrigem.autenticaSenha(senha)) {
             throw new IllegalArgumentException("Senha inválida.");

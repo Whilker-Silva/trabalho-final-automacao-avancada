@@ -5,15 +5,25 @@ import java.io.OutputStreamWriter;
 import java.io.PrintWriter;
 import java.net.Socket;
 
-public class Cliente extends Thread{
+public class Cliente extends Thread {
 
     private Socket socket;
     private PrintWriter out;
+    private int port;
+    private String name;
 
-    protected Cliente() {
+    protected Cliente(int port, String name) {
+        this.port = port;
+        this.name = name;
+    }
+
+    @Override
+    public void run() {
         try {
-            socket = new Socket("localhost", 4000);
+            socket = new Socket("localhost", port);
             out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
+            System.out.println("Cliente " + name + " iniciada na porta " + port);
+
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -27,5 +37,4 @@ public class Cliente extends Thread{
         }
     }
 
-    
 }
