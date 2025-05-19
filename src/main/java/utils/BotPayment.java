@@ -1,13 +1,13 @@
 package utils;
 
-import simulacao.banco.Transacao;
+import pkg.banco.Transacao;
 
 public class BotPayment extends Thread{
 
     private ClientBank clientBank;
 
     public BotPayment(int port, String login) {
-        clientBank = new ClientBank(4000, login);
+        clientBank = new ClientBank(port, login);
     }
 
     @Override
