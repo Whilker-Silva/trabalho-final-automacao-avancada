@@ -1,9 +1,12 @@
-package pkg.sumo;
+package simulacao;
 
 import java.io.IOException;
 
 import de.tudresden.sumo.objects.SumoColor;
 import it.polito.appeal.traci.SumoTraciConnection;
+import pkg.sumo.Auto;
+import pkg.sumo.Itinerary;
+import pkg.sumo.TransportService;
 
 public class EnvSimulator extends Thread{
 
@@ -46,12 +49,10 @@ public class EnvSimulator extends Thread{
 
 				TransportService tS1 = new TransportService(true, "CAR1", i1, a1, sumo);
 				TransportService tS2 = new TransportService(true, "CAR2", i2, a2, sumo);
+				
+				Thread.sleep(5000);
 				tS1.start();
 				tS2.start();
-				Thread.sleep(5000);
-				a1.start();
-				Thread.sleep(5000);
-				a2.start();
 			}
 
 		

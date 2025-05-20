@@ -27,6 +27,7 @@ public class Itinerary {
 			DocumentBuilder builder = factory.newDocumentBuilder();
 			Document doc = builder.parse(this.uriItineraryXML);
 			NodeList nList = doc.getElementsByTagName("vehicle");
+			
 			for (int i = 0; i < nList.getLength(); i++) {
 				Node nNode = nList.item(i);
 				if (nNode.getNodeType() == Node.ELEMENT_NODE) {
@@ -35,6 +36,7 @@ public class Itinerary {
 					Node node = elem.getElementsByTagName("route").item(0);
 					Element edges = (Element) node;
 					this.itinerary = new String[] { idRouteAux, edges.getAttribute("edges") };
+					System.out.println(itinerary);
 				}
 			}
 

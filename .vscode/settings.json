@@ -1,4 +1,14 @@
 {
     "java.configuration.updateBuildConfiguration": "interactive",
-    "java.debug.settings.onBuildFailureProceed": true
+    "java.debug.settings.onBuildFailureProceed": true,
+    "editor.minimap.autohide": true,
+    "editor.minimap.enabled": true,
+    "scm.compactFolders": false,
+    "explorer.compactFolders": false,
+    "editor.renderLineHighlight": "gutter",
+    "editor.minimap.maxColumn": 80,
+    "workbench.activityBar.iconClickBehavior": "toggle",
+    "workbench.activityBar.location": "default", 
+    "vsicons.customIconFolderPath": "C:/User/whilk/AppData/Roaming/Code/User/"   
+    
 }
