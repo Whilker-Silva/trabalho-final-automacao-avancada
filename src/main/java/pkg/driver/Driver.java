@@ -1,34 +1,32 @@
 package pkg.driver;
 
-import pkg.banco.AlphaBank;
-import pkg.banco.Account;
-import utils.BotPayment;
+import pkg.banco.BotPayment;
 
 public class Driver extends Thread {
 
-    private BotPayment botPayment;
-    private Account contaCorrente;
-    private String senha;
+    private final String login;
+    private final String senha;
+    private final BotPayment botPayment;    
 
     public Driver(String login, String senha) {
+        this.login =login;
         this.senha = senha;
-        contaCorrente = AlphaBank.criarConta(login, senha, 0);
-        botPayment = new BotPayment(4000,login);
+        
+        botPayment = new BotPayment(4000,login, senha, 0);
         botPayment.start();
     }
 
     public void abastacer(String destino, double valor) {
-        botPayment.solicitarTransferencia(getLogin(), destino, valor, senha);
+        botPayment.solicitarTransferencia(destino, valor, senha);
     }
 
     public String getLogin() {
-        return contaCorrente.getLogin();
+        return login;
     }
 
     @Override
     public void run() {
         // TODO Auto-generated method stub
-        super.run();
     }
 
 }

@@ -83,7 +83,7 @@ public abstract class Server extends Thread {
                     System.err.println("Erro ao fechar socket do cliente");
                 }
             }
-        }).start();
+        }, "clt_"+socket.getLocalPort()).start();
 
     }
 

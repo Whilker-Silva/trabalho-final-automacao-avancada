@@ -3,6 +3,7 @@ package simulacao;
 import org.python.modules.itertools.ifilter;
 
 import pkg.company.Route;
+import pkg.driver.Driver;
 
 public class Principal {
     public static void main(String[] args) {
@@ -19,7 +20,11 @@ public class Principal {
 
         // EnvSimulator ev = new EnvSimulator();
         // ev.start();
-      
+
+        Driver driver1 = new Driver("driver1", "driver1");
+        Driver driver2 = new Driver("driver2", "driver2");
+
+        driver1.abastacer(driver2.getLogin(), 150);
 
     }
 }

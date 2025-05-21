@@ -2,11 +2,13 @@ package pkg.company;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Queue;
 
 import pkg.banco.Account;
 import pkg.banco.AlphaBank;
+import pkg.banco.BotPayment;
 import pkg.banco.Transacao;
-import utils.BotPayment;
 import utils.Crypto;
 import utils.Json;
 import utils.Server;
@@ -17,14 +19,17 @@ import utils.Server;
  */
 public class Company extends Thread {
 
-    private ServerCompany serverCompany;
-    private BotPayment botPayment;
-    private Account contaCorrente;
-    private String senha;
+    private final String login;
+    private final String senha;
 
-    private HashMap<Integer, Route> rotasExecutar;
-    private HashMap<Integer, Route> rotasExecuntado;
-    private HashMap<Integer, Route> rotasExecutadas;
+    private final ServerCompany serverCompany;
+    private final BotPayment botPayment;
+
+    private final Queue<Integer> filaDedados;
+
+    private final Queue<Route> rotasExecutar;
+    private final ArrayList<Route> rotasExecuntado;
+    private final ArrayList<Route> rotasExecutadas;
 
     /**
      * Construtor da classe Company
@@ -34,36 +39,41 @@ public class Company extends Thread {
      */
     public Company(String login, String senha) {
 
-        // Cria uma Accont para company
+        this.login = login;
         this.senha = senha;
-        contaCorrente = AlphaBank.criarConta(login, senha, 1000000);
 
         // Inicializa o Serve para comunicação com os Cars
         serverCompany = new ServerCompany(4001, "Company");
         serverCompany.start();
 
         // Inicializa o BotPayment para realizar pagamentos aos Drivers
-        botPayment = new BotPayment(4000, login);
+        botPayment = new BotPayment(4000, login, senha, 10000000);
         botPayment.start();
 
-        rotasExecutar = new HashMap<>();
-        rotasExecuntado = new HashMap<>();
-        rotasExecutadas = new HashMap<>();
-        
-        for (int i = 1; i <= 200; i++) {
-            rotasExecutar.put(i, new Route(i));
-        }
+        // Ininicailiza fila de dados a processar
+        filaDedados = new LinkedList<>();
 
+        // Inicializa lista de rotas (A executar, execuntado e executadas)
+        rotasExecutar = new LinkedList<>();
+        rotasExecuntado = new ArrayList<>();
+        rotasExecutadas = new ArrayList<>();
 
-
+        this.importarRotas(200);
     }
 
-    public void pagarMotorista(String destino, double valor) {
-        botPayment.solicitarTransferencia(getLogin(), destino, valor, senha);
+    @Override
+    public void run() {
+        // TODO Processar fila de dados recebido pelos car e gerara relatórios
+    }
+
+    private void importarRotas(int qtd) {
+        for (int i = 1; i <= qtd; i++) {
+            rotasExecutar.add(new Route(i));
+        }
     }
 
     public String getLogin() {
-        return contaCorrente.getLogin();
+        return login;
     }
 
     /**
@@ -79,7 +89,7 @@ public class Company extends Thread {
         protected void processarMensagem(String msg) throws Exception {
             Json.fromJson(Crypto.descriptografar(msg), Transacao.class);
             // TODO Altera para tipo de mensagem correta (trocada com a classe Car) e
-            // procesa-la
+            // adicionar na fila de processamento
         }
 
     }

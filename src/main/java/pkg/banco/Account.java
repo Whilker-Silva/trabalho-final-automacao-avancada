@@ -16,7 +16,7 @@ public class Account extends Thread {
     private volatile double saldo;
 
     /**
-     * Método construtor da classe Conta corrente
+     * Método construtor da classe {@code Account}
      * 
      * @param login       String
      * @param senha       String

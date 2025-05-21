@@ -21,7 +21,7 @@ public class Transacao implements Runnable {
     private final String senha;
 
     /**
-     * Construtor da classe Transacao.
+     * Construtor da classe {@code Transacao}.
      * 
      * @param origem  String - login da conta de origem.
      * @param destino String - login da conta de destino.
