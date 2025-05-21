@@ -10,24 +10,22 @@ package pkg.banco;
  * 
  * A transação é processada de forma segura com sincronização para evitar
  * condições de corrida.
- * 
- * @author Whilker Henrique Dos Santo Silva
  */
 public class Transacao implements Runnable {
 
     // Atributos
     private long timestamp;
-    private String origem;
-    private String destino;
-    private double valor;
-    private String senha;
+    private final String origem;
+    private final String destino;
+    private final double valor;
+    private final String senha;
 
     /**
      * Construtor da classe Transacao.
      * 
      * @param origem  String - login da conta de origem.
      * @param destino String - login da conta de destino.
-     * @param valor   String - Valor a ser transferido.
+     * @param valor   double - Valor a ser transferido.
      * @param senha   String - Senha da conta de origem.
      */
     public Transacao(String origem, String destino, double valor, String senha) {
@@ -61,14 +59,21 @@ public class Transacao implements Runnable {
      * 
      * @throws IllegalArgumentException se a senha da conta de origem for inválida.
      */
-    private synchronized void processarTransacao() {
+    private void processarTransacao() {
 
-        Account contaOrigem = AlphaBank.getConta(origem);
-        Account contaDestino = AlphaBank.getConta(destino);
+        Account contaOrigem;
+        Account contaDestino;
+
+        try {
+            contaOrigem = AlphaBank.getConta(origem);
+            contaDestino = AlphaBank.getConta(destino);
+        } catch (Exception e) {
+            throw new IllegalArgumentException("Conta não encontrada: " + e.getMessage());
+        }
 
         // Verifica se a senha está correta
         if (!contaOrigem.autenticaSenha(senha)) {
-            throw new IllegalArgumentException("Senha inválida.");
+            throw new IllegalArgumentException("Senha inválida para a conta " + origem);
         }
 
         // Ordenação para evitar deadlocks
@@ -77,10 +82,17 @@ public class Transacao implements Runnable {
 
         synchronized (firstLock) {
             synchronized (secondLock) {
+                // Verifica o saldo dentro do bloco sincronizado para garantir
+                if (contaOrigem.getSaldo() < valor) {
+                    throw new IllegalStateException("Saldo insuficiente na conta " + origem);
+                }
+
+                // Realiza a transação
                 if (contaOrigem.debitar(this)) {
                     contaDestino.depositar(this);
+                    System.out.printf("Transferencia de R$%.2f realizada de %s para %s", valor, origem, destino);
                 } else {
-                    System.out.println("SALDO INSUFICIENTE");
+                    throw new IllegalStateException("Falha ao debitar da conta " + origem);
                 }
             }
         }
@@ -115,7 +127,7 @@ public class Transacao implements Runnable {
     }
 
     /**
-     *Define o timestamp da transação com a hora atual em nanossegundos.
+     * Define o timestamp da transação com a hora atual em nanossegundos.
      */
     private void setTimestamp() {
         this.timestamp = System.nanoTime();
