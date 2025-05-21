@@ -71,11 +71,6 @@ public class Transacao implements Runnable {
             throw new IllegalArgumentException("Conta não encontrada: " + e.getMessage());
         }
 
-        // Verifica se a senha está correta
-        if (!contaOrigem.autenticaSenha(senha)) {
-            throw new IllegalArgumentException("Senha inválida para a conta " + origem);
-        }
-
         // Ordenação para evitar deadlocks
         Account firstLock = origem.compareTo(destino) < 0 ? contaOrigem : contaDestino;
         Account secondLock = origem.compareTo(destino) < 0 ? contaDestino : contaOrigem;
@@ -88,12 +83,10 @@ public class Transacao implements Runnable {
                 }
 
                 // Realiza a transação
-                if (contaOrigem.debitar(this)) {
-                    contaDestino.depositar(this);
-                    System.out.printf("Transferencia de R$%.2f realizada de %s para %s", valor, origem, destino);
-                } else {
-                    throw new IllegalStateException("Falha ao debitar da conta " + origem);
-                }
+                contaOrigem.debitar(this, senha);
+                contaDestino.depositar(this);
+                System.out.printf("Transferencia de R$%.2f realizada de %s para %s", valor, origem, destino);
+
             }
         }
     }

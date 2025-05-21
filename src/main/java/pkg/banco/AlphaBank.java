@@ -7,7 +7,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.TimeUnit;
 
 import utils.Crypto;
 import utils.Json;
@@ -63,6 +62,7 @@ public class AlphaBank extends Thread {
      * threads.
      */
     private AlphaBank() {
+        this.setName("AlphaBank");
         this.poolTransacoes = Executors.newFixedThreadPool(20);
         this.filaTransacoes = new LinkedBlockingQueue<>();
         this.listaContas = new ConcurrentHashMap<>();
@@ -81,8 +81,8 @@ public class AlphaBank extends Thread {
 
         while (serverBank.isAlive()) {
             try {
-                // Aguarda uma transação da fila
-                Transacao transacao = filaTransacoes.poll(5, TimeUnit.SECONDS);
+                // Aguarda uma transação da fila (Take ao invez de peek para Thread dormir)
+                Transacao transacao = filaTransacoes.take();
 
                 if (transacao != null) {
                     /*
