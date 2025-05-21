@@ -28,11 +28,12 @@ public class Account extends Thread {
         this.login = login;
         this.senha = senha;
         this.saldo = saldoInical;
+        this.start();
     }
 
     @Override
     public void run() {
-        // TODO Auto-generated method stub
+        // TODO implementar geração de extrato
     }
 
     /**
