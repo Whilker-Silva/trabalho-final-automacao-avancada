@@ -1,38 +1,49 @@
 package pkg.car;
 
+import de.tudresden.sumo.cmd.Vehicle;
+import pkg.company.Route;
 import utils.Cliente;
 
-public class Car implements Runnable{
+public class Car extends Vehicle implements Runnable {
 
     private static int qtdCars = 0;
 
-    private ClientCar clienteCar;
-    private int idCar;
+    private Cliente clienteCar;
+    private String idCar;
+    private String idDriver;
+    private Route rota;
 
-    public  Car(){
+    public Car(String idDriver) {
+        qtdCars = +1;
 
-        qtdCars =+ 1;
-        idCar = qtdCars;
+        this.idCar = "car" + qtdCars;
+        this.idDriver = idDriver;
 
-        clienteCar = new ClientCar(4001, "Car " + idCar);
+        clienteCar = new Cliente(4001, idCar);
+        clienteCar.start();
+    }
+
+    public void setRoute(Route rota) {
+        this.rota = rota;
     }
 
     @Override
     public void run() {
-       
-        
+        try {
+            System.out.printf("EXECUTANDO %s\n", this.rota.getIdRoute());
+            Thread.sleep(3000);
+
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
     }
 
+    public String getIdCar() {
+        return idCar;
+    }
 
-    private class ClientCar extends Cliente {
+    public String getIdDriver() {
+        return idDriver;
+    }
 
-        public ClientCar(int port, String name) {
-            super(port, name);
-        }
-
-        public void enviaMensagem(String msg) {
-            super.enviaMensagem(msg);
-        }
-    }    
-    
 }

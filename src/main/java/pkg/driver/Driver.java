@@ -28,7 +28,7 @@ public class Driver extends Thread {
         this.login = login;
         this.senha = senha;
 
-        car = new Car();
+        car = new Car(login);
         Company.getInstance().addCar(car);
 
         try {
