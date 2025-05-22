@@ -1,12 +1,12 @@
 package pkg.banco;
 
 import utils.Server;
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
+
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import utils.Crypto;
 import utils.Json;
@@ -31,10 +31,14 @@ public class AlphaBank extends Thread {
     private static AlphaBank instancia;
 
     // Atributos
-    private final BlockingQueue<Transacao> filaTransacoes;
-    private final Map<String, Account> listaContas;
+    private final Queue<Transacao> filaTransacoes;
+    private final HashMap<String, Account> listaContas;
     private final ExecutorService poolTransacoes;
     private final ServerBank serverBank;
+
+    // Controle de lock dos metodos que acessam saldo e extrato
+    private final Object lockTransacoes = new Object();
+    private final Object lockContas = new Object();
 
     /**
      * Retorna a instância única do {@code AlphaBank}, implementando o padrão
@@ -64,8 +68,8 @@ public class AlphaBank extends Thread {
     private AlphaBank() {
         this.setName("AlphaBank");
         this.poolTransacoes = Executors.newFixedThreadPool(20);
-        this.filaTransacoes = new LinkedBlockingQueue<>();
-        this.listaContas = new ConcurrentHashMap<>();
+        this.filaTransacoes = new LinkedList<>();
+        this.listaContas = new HashMap<>();
 
         this.serverBank = new ServerBank(4000, "AlphaBank");
         this.start();
@@ -81,24 +85,28 @@ public class AlphaBank extends Thread {
 
         while (serverBank.isAlive()) {
             try {
-                // Aguarda uma transação da fila (Take ao invez de peek para Thread dormir)
-                Transacao transacao = filaTransacoes.take();
+                Transacao transacao = null;
+
+                synchronized (lockTransacoes) {
+                    while (filaTransacoes.isEmpty()) {
+                        System.out.println("Aguardando solocitação de transação...");
+                        lockTransacoes.wait();
+                    }
+
+                    transacao = filaTransacoes.poll();
+                }
 
                 if (transacao != null) {
-                    /*
-                     * Uso do submit é similar ao start,
-                     * Contudo, permite melhor controle de concorrência
-                     */
                     poolTransacoes.submit(transacao);
                 }
 
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-                System.err.println("Thread do AlphaBank interrompida.");
-            } catch (Exception e) {
+            }
+
+            catch (Exception e) {
                 System.err.println("Erro ao processar transação: " + e.getMessage());
             }
         }
+        poolTransacoes.shutdown();
     }
 
     /**
@@ -108,32 +116,45 @@ public class AlphaBank extends Thread {
      * @param senha       String
      * @param saldoIncial double
      * @return Instancia de Accout
+     * @throws InterruptedException
      */
-    public static Account criarConta(String login, String senha, double saldoIncial) {
+    public static Account criarConta(String login, String senha, double saldoIncial) throws InterruptedException {
         return getInstancia().criarContaStatic(login, senha, saldoIncial);
     }
 
-    private synchronized Account criarContaStatic(String login, String senha, double saldoIncial) {
-        Account novaConta = new Account(login, senha, saldoIncial);
-        listaContas.put(login, novaConta);
-        return novaConta;
+    private Account criarContaStatic(String login, String senha, double saldoIncial) throws InterruptedException {
+        synchronized (this.lockContas) {
+            Account novaConta = new Account(login, senha, saldoIncial);
+            listaContas.put(login, novaConta);
+            return novaConta;
+        }
     }
 
     /**
      * Retorna a conta associada ao login informado.
+     * 
      * @param login String
      * @return instância correspondente de Account
      */
     public static Account getConta(String login) {
         return getInstancia().getContaStatic(login);
     }
-   
-    private synchronized Account getContaStatic(String login) {
-        Account conta = listaContas.get(login);
-        if (conta == null) {
-            throw new IllegalArgumentException("Login não encontrado.");
+
+    private Account getContaStatic(String login) throws IllegalArgumentException {
+        synchronized (lockContas) {
+            Account conta = listaContas.get(login);
+            if (conta == null) {
+                throw new IllegalArgumentException("Login não encontrado.");
+            }
+            return conta;
         }
-        return conta;
+    }
+
+    private void adicionarTransacao(Transacao transacao) {
+        synchronized (lockTransacoes) {
+            filaTransacoes.add(transacao);
+            lockTransacoes.notify();
+        }
     }
 
     /**
@@ -150,7 +171,7 @@ public class AlphaBank extends Thread {
             try {
                 String mensagemDescriptografada = Crypto.descriptografar(msg);
                 Transacao transacao = Json.fromJson(mensagemDescriptografada, Transacao.class);
-                filaTransacoes.put(transacao);
+                adicionarTransacao(transacao);
             }
 
             catch (Exception e) {
@@ -159,5 +180,4 @@ public class AlphaBank extends Thread {
             }
         }
     }
-
 }

@@ -10,10 +10,13 @@ import java.util.ArrayList;
 public class Account extends Thread {
 
     // Atributos
-    private final ArrayList<Transacao> extrato;
-    private final String login;
-    private final String senha;
-    private volatile double saldo;
+    private ArrayList<Transacao> extrato;
+    private String login;
+    private String senha;
+    private double saldo;
+
+    // Controle de lock dos metodos que acessam saldo e extrato
+    private final Object lock = new Object();
 
     /**
      * Método construtor da classe {@code Account}
@@ -23,8 +26,8 @@ public class Account extends Thread {
      * @param saldoIncial double
      */
     public Account(String login, String senha, double saldoInical) {
-        this.setName("Acc_" + login);
-        extrato = new ArrayList<>();
+        this.setName("Account_" + login);
+        this.extrato = new ArrayList<>();
         this.login = login;
         this.senha = senha;
         this.saldo = saldoInical;
@@ -39,39 +42,44 @@ public class Account extends Thread {
     /**
      * Debita uma quantia da conta, se houver saldo suficiente e autenticação
      * válida.
-     *
+     * 
      * @param transacao Transação a ser realizada
      * @param senha     Senha da conta para autenticação
-     * @throws IllegalArgumentException se senha estiver incorreta, origem inválida
-     *                                  ou saldo insuficiente
+     * @throws InterruptedException
+     * @throws IllegalArgumentException
      */
-    public synchronized void debitar(Transacao transacao, String senha) {
-        if (!this.autenticaSenha(senha)) {
-            throw new IllegalArgumentException("Senha incorreta");
+    public void debitar(Transacao transacao, String senha) throws InterruptedException {
+        synchronized (this.lock) {
+            if (!this.autenticaSenha(senha)) {
+                throw new IllegalArgumentException("Senha incorreta");
+            }
+            if (!transacao.getOrigem().equals(login)) {
+                throw new IllegalArgumentException("Conta de origem incorreta");
+            }
+            if (!this.verificaSaldo(transacao.getValor())) {
+                throw new IllegalArgumentException("Saldo insuficiente!");
+            }
+
+            this.saldo -= transacao.getValor();
+            this.extrato.add(transacao);
         }
-        if (!transacao.getOrigem().equals(login)) {
-            throw new IllegalArgumentException("Conta de origem incorreta");
-        }
-        if (!this.verificaSaldo(transacao.getValor())) {
-            throw new IllegalArgumentException("Saldo insuficiente!");
-        }
-        this.saldo -= transacao.getValor();
-        this.extrato.add(transacao);
     }
 
     /**
      * Deposita uma quantia na conta.
      *
      * @param transacao Transação a ser realizada
-     * @throws IllegalArgumentException se a conta de destino não for a correta da
-     *                                  transação
+     * @throws InterruptedException
+     * @throws IllegalArgumentException
      */
-    public synchronized void depositar(Transacao transacao) {
-        if (!transacao.getDestino().equals(login)) {
-            throw new IllegalArgumentException("Conta de destino incorreta");
+    public void depositar(Transacao transacao) throws InterruptedException {
+        synchronized (this.lock) {
+            if (!transacao.getDestino().equals(login)) {
+                throw new IllegalArgumentException("Conta de destino incorreta");
+            }
+            this.saldo += transacao.getValor();
+            this.extrato.add(transacao);
         }
-        this.saldo += transacao.getValor();
-        this.extrato.add(transacao);
     }
 
     /**
@@ -91,15 +99,18 @@ public class Account extends Thread {
      * @return true se houver saldo suficiente, false caso contrário
      */
     private boolean verificaSaldo(double valor) {
-        return this.getSaldo() >= valor;
+        return this.saldo >= valor;
     }
 
     /**
      * @return Saldo da conta
+     * @throws InterruptedException
      */
-    public synchronized double getSaldo() {
-        return this.saldo;
-    }    
+    public double getSaldo() throws InterruptedException {
+        synchronized (this.lock) {
+            return this.saldo;
+        }
+    }
 
     /**
      * Retorna o login da conta.

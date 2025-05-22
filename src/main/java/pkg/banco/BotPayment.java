@@ -21,8 +21,9 @@ public class BotPayment extends Cliente {
      * @param login        String
      * @param senha        String
      * @param saldoInical  double
+     * @throws InterruptedException 
      */
-    public BotPayment(int port, String login, String senha, double saldoInical) {
+    public BotPayment(int port, String login, String senha, double saldoInical) throws InterruptedException {
         super(port, login);
         contaCorrente = AlphaBank.criarConta(login, senha, saldoInical);
     }
@@ -35,7 +36,7 @@ public class BotPayment extends Cliente {
      * @param valor    Valor a ser transferido.
      * @param senha    Senha do remetente para autenticação.
      */
-    public synchronized void solicitarTransferencia(String destino, double valor, String senha) {
+    public void solicitarTransferencia(String destino, double valor, String senha) {
         Transacao novaTransacao = new Transacao(contaCorrente.getLogin(), destino, valor, senha);
         String msg = Json.toJson(novaTransacao);
         try {

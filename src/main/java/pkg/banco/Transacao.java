@@ -57,19 +57,14 @@ public class Transacao implements Runnable {
      * Autentica a senha, sincroniza o acesso às contas envolvidas para evitar
      * condições de corrida e executa a transferência, se possível.
      * 
+     * @throws InterruptedException
+     * 
      * @throws IllegalArgumentException se a senha da conta de origem for inválida.
      */
-    private void processarTransacao() {
+    private void processarTransacao() throws InterruptedException {
 
-        Account contaOrigem;
-        Account contaDestino;
-
-        try {
-            contaOrigem = AlphaBank.getConta(origem);
-            contaDestino = AlphaBank.getConta(destino);
-        } catch (Exception e) {
-            throw new IllegalArgumentException("Conta não encontrada: " + e.getMessage());
-        }
+        Account contaOrigem = AlphaBank.getConta(origem);
+        Account contaDestino = AlphaBank.getConta(destino);
 
         // Ordenação para evitar deadlocks
         Account firstLock = origem.compareTo(destino) < 0 ? contaOrigem : contaDestino;
@@ -77,16 +72,10 @@ public class Transacao implements Runnable {
 
         synchronized (firstLock) {
             synchronized (secondLock) {
-                // Verifica o saldo dentro do bloco sincronizado para garantir
-                if (contaOrigem.getSaldo() < valor) {
-                    throw new IllegalStateException("Saldo insuficiente na conta " + origem);
-                }
-
                 // Realiza a transação
                 contaOrigem.debitar(this, senha);
                 contaDestino.depositar(this);
                 System.out.printf("Transferencia de R$%.2f realizada de %s para %s", valor, origem, destino);
-
             }
         }
     }
@@ -122,7 +111,7 @@ public class Transacao implements Runnable {
     /**
      * Define o timestamp da transação com a hora atual em nanossegundos.
      */
-    private void setTimestamp() {
+    private synchronized void setTimestamp() {
         this.timestamp = System.nanoTime();
     }
 
