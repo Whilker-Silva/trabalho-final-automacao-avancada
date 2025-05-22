@@ -16,15 +16,13 @@ public class BotPayment extends Cliente {
 
      /**
      * Construtor do {@code BotPayment}.
-     *
-     * @param port         int
      * @param login        String
      * @param senha        String
      * @param saldoInical  double
      * @throws InterruptedException 
      */
-    public BotPayment(int port, String login, String senha, double saldoInical) throws InterruptedException {
-        super(port, login);
+    public BotPayment(String login, String senha, double saldoInical) throws InterruptedException {
+        super(4000, login);
         contaCorrente = AlphaBank.criarConta(login, senha, saldoInical);
     }
 
