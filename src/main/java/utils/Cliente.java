@@ -12,7 +12,7 @@ public class Cliente extends Thread {
     private int port;
     private String name;
 
-    protected Cliente(int port, String name) {
+    public Cliente(int port, String name) {
         this.port = port;
         this.name = name;
     }
