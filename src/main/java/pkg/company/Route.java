@@ -1,6 +1,5 @@
 package pkg.company;
 
-
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 
@@ -17,17 +16,15 @@ public class Route {
 
 	private String idRoute;
 	private SumoStringList edges;
-	private boolean on;
 
 	public Route(int idRoute) {
 		try {
 			if (nodeList == null) {
-				importXML("data/dados_ids_corrigidos.xml");
+				importXML("data/rotas.xml");
 			}
 
-			this.idRoute = Integer.toString(idRoute);
+			this.idRoute = "route" + Integer.toString(idRoute);
 			extairEdges(idRoute);
-			this.on = true;
 		}
 
 		catch (Exception e) {
@@ -66,9 +63,4 @@ public class Route {
 	public SumoStringList getEdges() {
 		return edges;
 	}
-
-	public boolean isOn() {
-		return on;
-	}
-
 }
