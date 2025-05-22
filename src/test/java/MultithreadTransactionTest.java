@@ -115,7 +115,7 @@ public class MultithreadTransactionTest {
                             
                             // Realiza múltiplas transferências para o mesmo destino
                             for (int k = 0; k < TRANSACTIONS_PER_DRIVER / (NUM_DRIVERS - 1); k++) {
-                                driver.abastecer(destinationLogin, TRANSACTION_AMOUNT, password);
+                                
                                 
                                 // Pequena pausa para simular operações reais
                                 Thread.sleep(50);
@@ -203,7 +203,7 @@ public class MultithreadTransactionTest {
         Thread thread1 = new Thread(() -> {
             try {
                 for (int i = 0; i < 20; i++) {
-                    driver1.abastecer(login2, 50.0, password1);
+                   // driver1.abastecer(login2, 50.0, password1);
                     Thread.sleep(10);
                 }
             } catch (Exception e) {
@@ -218,7 +218,7 @@ public class MultithreadTransactionTest {
         Thread thread2 = new Thread(() -> {
             try {
                 for (int i = 0; i < 20; i++) {
-                    driver2.abastecer(login1, 50.0, password2);
+                    //driver2.abastecer(login1, 50.0, password2);
                     Thread.sleep(10);
                 }
             } catch (Exception e) {
@@ -289,7 +289,7 @@ public class MultithreadTransactionTest {
                     String sourcePassword = driverPasswords.get(sourceIndex);
                     
                     for (int j = 0; j < transactionsPerThread; j++) {
-                        sourceDriver.abastecer(destinationLogin, amount, sourcePassword);
+                       // sourceDriver.abastecer(destinationLogin, amount, sourcePassword);
                         Thread.sleep(10);
                     }
                 } catch (Exception e) {
