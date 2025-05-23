@@ -1,7 +1,7 @@
 import org.junit.Test;
 
-import pkg.banco.*;
-import pkg.driver.Driver;
+import simulacao.pkg.banco.*;
+import simulacao.pkg.driver.Driver;
 
 public class BotPaymentTest {
 

@@ -1,15 +1,13 @@
-package pkg.car;
+package simulacao.pkg.car;
 
-import java.util.Random;
 
 import de.tudresden.sumo.cmd.Vehicle;
-import pkg.company.Route;
+import simulacao.pkg.company.Route;
 import utils.Cliente;
 import utils.Json;
 
 public class Car extends Vehicle implements Runnable {
 
-    private static final Random rand = new Random();
     private static int qtdCars = 0;
 
     private Cliente clienteCar;
@@ -34,18 +32,22 @@ public class Car extends Vehicle implements Runnable {
     @Override
     public void run() {
         try {
-            //System.out.printf("EXECUTANDO %s\n", this.rota.getIdRoute());
-            Thread.sleep(rand.nextInt(30) * 100 + 1000);
-            DataCar dataCar = new DataCar(idCar, rota.getIdRoute(), idDriver);
-            String msg = Json.toJson(dataCar);
-            clienteCar.enviaMensagem(msg);
+            sendDataCar();
+        }
 
-        } catch (Exception e) {
-            // TODO: handle exception
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        finally {
+            System.out.printf("%s finalizada\n", rota.getIdRoute());
+            rota.finish();
+            sendDataCar();
+            rota = null;
         }
     }
 
-    public void closeSocket(){
+    public void closeSocket() {
         clienteCar.closeSocket();
     }
 
@@ -55,6 +57,12 @@ public class Car extends Vehicle implements Runnable {
 
     public String getIdDriver() {
         return idDriver;
+    }
+
+    private void sendDataCar() {
+        DataCar dataCar = new DataCar(idCar, rota.getIdRoute(), idDriver);
+        String msg = Json.toJson(dataCar);
+        clienteCar.enviaMensagem(msg);
     }
 
 }

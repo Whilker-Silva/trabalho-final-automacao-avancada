@@ -1,4 +1,4 @@
-package pkg.banco;
+package simulacao.pkg.banco;
 
 import java.util.ArrayList;
 

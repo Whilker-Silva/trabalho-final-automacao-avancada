@@ -1,4 +1,4 @@
-package pkg.company;
+package simulacao.pkg.company;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -16,6 +16,7 @@ public class Route {
 
 	private String idRoute;
 	private SumoStringList edges;
+	private boolean on;
 
 	public Route(int idRoute) {
 		try {
@@ -25,6 +26,7 @@ public class Route {
 
 			this.idRoute = "route" + Integer.toString(idRoute);
 			extairEdges(idRoute);
+			this.on = true;
 		}
 
 		catch (Exception e) {
@@ -62,5 +64,13 @@ public class Route {
 
 	public SumoStringList getEdges() {
 		return edges;
+	}
+
+	public void finish() {
+		this.on = false;
+	}
+
+	public boolean isOn(){
+		return this.on;
 	}
 }

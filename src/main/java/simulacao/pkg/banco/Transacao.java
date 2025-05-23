@@ -1,4 +1,4 @@
-package pkg.banco;
+package simulacao.pkg.banco;
 
 /**
  * Classe que representa uma transação bancária entre duas contas.

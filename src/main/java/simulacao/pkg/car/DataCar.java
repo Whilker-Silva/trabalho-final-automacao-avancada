@@ -1,4 +1,4 @@
-package pkg.car;
+package simulacao.pkg.car;
 
 public class DataCar {
 

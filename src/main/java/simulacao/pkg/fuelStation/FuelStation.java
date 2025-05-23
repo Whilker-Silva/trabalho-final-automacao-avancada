@@ -1,4 +1,4 @@
-package pkg.fuelStation;
+package simulacao.pkg.fuelStation;
 
 public class FuelStation {
     

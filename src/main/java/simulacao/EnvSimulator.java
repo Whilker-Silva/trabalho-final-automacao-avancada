@@ -1,8 +1,8 @@
 package simulacao;
 
-import pkg.banco.AlphaBank;
-import pkg.company.Company;
-import pkg.driver.Driver;
+import simulacao.pkg.banco.AlphaBank;
+import simulacao.pkg.company.Company;
+import simulacao.pkg.driver.Driver;
 
 public class EnvSimulator extends Thread {
 

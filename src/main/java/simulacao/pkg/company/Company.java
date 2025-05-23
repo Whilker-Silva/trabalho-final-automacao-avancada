@@ -1,13 +1,13 @@
-package pkg.company;
+package simulacao.pkg.company;
 
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import pkg.banco.BotPayment;
-import pkg.car.Car;
-import pkg.car.DataCar;
+import simulacao.pkg.banco.BotPayment;
+import simulacao.pkg.car.Car;
+import simulacao.pkg.car.DataCar;
 import utils.Crypto;
 import utils.Json;
 import utils.Server;

@@ -3,8 +3,9 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import pkg.driver.Driver;
 
+import simulacao.pkg.banco.*;
+import simulacao.pkg.driver.Driver;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,9 +13,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.CyclicBarrier;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-
-import pkg.banco.*;
-
 
 import static org.junit.Assert.*;
 

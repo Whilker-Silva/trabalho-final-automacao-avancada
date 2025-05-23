@@ -1,13 +1,13 @@
-package pkg.driver;
+package simulacao.pkg.driver;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import pkg.banco.BotPayment;
-import pkg.car.Car;
-import pkg.company.Company;
-import pkg.company.Route;
+import simulacao.pkg.banco.BotPayment;
+import simulacao.pkg.car.Car;
+import simulacao.pkg.company.Company;
+import simulacao.pkg.company.Route;
 
 public class Driver extends Thread {
 
