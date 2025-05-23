@@ -11,8 +11,7 @@ import pkg.company.Route;
 
 public class Driver extends Thread {
 
-    // Controle de lock dos metodos que acessam saldo e extrato
-    private final Object lock = new Object();
+    private final Object lockRotas = new Object();
 
     private String login;
     private String senha;
@@ -45,44 +44,45 @@ public class Driver extends Thread {
 
     @Override
     public void run() {
-        synchronized (lock) {
-            solicitaRota();
 
-            while (!rotasExecutar.isEmpty()) {
+        solicitaRota();
 
-                try {
+        while (!executarIsEmpty()) {
 
-                    // Move rota a executar para rotas em execução
-                    rotasExecutando.add(rotasExecutar.remove());
+            try {
 
-                    // configura a rota a ser executa pelo
-                    car.setRoute(rotasExecutando.getFirst());
+                // Move rota a executar para rotas em execução
+                Route rotaExecutando = removeRotasExecutar();
+                addRotasExecutando(rotaExecutando);
 
-                    // Lança a Thred car para executar a rota e aguarda a mesma finalizar
-                    Thread threadCar = new Thread(car);
-                    threadCar.start();
-                    threadCar.join();
+                // configura a rota a ser executa pelo
+                car.setRoute(rotaExecutando);
 
-                    // Move rota para rotas executadas
-                    rotasExecutadas.add(rotasExecutando.removeFirst());
+                // Lança a Thred car para executar a rota e aguarda a mesma finalizar
+                Thread threadCar = new Thread(car);
+                threadCar.start();
+                threadCar.join();
 
-                    // Solicita uma nova rota
-                    solicitaRota();
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
+                // Move rota para rotas executadas
+                Route finalizada = removeRotasExecutando(0);
+                addRotasExecutadas(finalizada);
+
+                // Solicita uma nova rota
+                solicitaRota();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
         }
-        
-        System.out.printf("DRIVER %s FINALIZADO\n", login);
+
         botPayment.closeSocket();
         car.closeSocket();
+
     }
 
     private void solicitaRota() {
         Route rota = Company.getInstance().getRoute();
         if (rota != null) {
-            rotasExecutar.add(rota);
+            addRotasExecutar(rota);
         }
     }
 
@@ -94,4 +94,41 @@ public class Driver extends Thread {
     public String getLogin() {
         return login;
     }
+
+    private void addRotasExecutar(Route route) {
+        synchronized (lockRotas) {
+            rotasExecutar.add(route);
+        }
+    }
+
+    private void addRotasExecutando(Route route) {
+        synchronized (lockRotas) {
+            rotasExecutando.add(route);
+        }
+    }
+
+    private void addRotasExecutadas(Route route) {
+        synchronized (lockRotas) {
+            rotasExecutadas.add(route);
+        }
+    }
+
+    private Route removeRotasExecutar() {
+        synchronized (lockRotas) {
+            return rotasExecutar.poll();
+        }
+    }
+
+    private Route removeRotasExecutando(int index) {
+        synchronized (lockRotas) {
+            return rotasExecutando.remove(index);
+        }
+    }
+
+    private boolean executarIsEmpty() {
+        synchronized (lockRotas) {
+            return rotasExecutar.isEmpty();
+        }
+    }
+
 }

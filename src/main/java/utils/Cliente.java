@@ -22,7 +22,7 @@ public class Cliente extends Thread {
         try {
             socket = new Socket("localhost", port);
             out = new PrintWriter(new OutputStreamWriter(socket.getOutputStream()), true);
-            System.out.println("Cliente " + name + " iniciada na porta " + port);
+            //System.out.println("Cliente " + name + " iniciada na porta " + port);
 
         } catch (IOException e) {
             e.printStackTrace();

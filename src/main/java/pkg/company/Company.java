@@ -4,11 +4,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import pkg.banco.BotPayment;
-import pkg.banco.Transacao;
 import pkg.car.Car;
 import pkg.car.DataCar;
 import utils.Crypto;
@@ -32,13 +29,13 @@ public class Company extends Thread {
     private final HashMap<String, Car> carros;
     private final Queue<DataCar> filaDedados;
 
-    private final BlockingQueue<Route> rotasExecutar;
-    private final ArrayList<Route> rotasExecuntado;
+    private final Queue<Route> rotasExecutar;
+    private final ArrayList<Route> rotasExecutando;
     private final ArrayList<Route> rotasExecutadas;
 
     private final Object lockData = new Object();
-
-    private boolean isOn;
+    private final Object lockRotas = new Object();
+    private final Object lockcar = new Object();
 
     /**
      * Método que criar um instancia única para a classe {@code Company}
@@ -84,32 +81,29 @@ public class Company extends Thread {
             e.printStackTrace();
         }
 
+        // Inicializa HashMap para instancia de Cars
+        carros = new HashMap<>();
+
         // Ininicailiza fila de dados a processar
         filaDedados = new LinkedList<>();
 
-        // HashMap com instancia de Cars
-        carros = new HashMap<>();
-
         // Inicializa lista de rotas (A executar, execuntado e executadas)
-        rotasExecutar = new LinkedBlockingQueue<>();
-        rotasExecuntado = new ArrayList<>();
+        rotasExecutar = new LinkedList<>();
+        rotasExecutando = new ArrayList<>();
         rotasExecutadas = new ArrayList<>();
 
         this.importarRotas(200);
-
-        this.isOn = true;
     }
 
     @Override
     public void run() {
-        while (this.isOn) {
+        while (serverCompany.isAlive()) {
             try {
                 DataCar dataCar = null;
 
                 synchronized (lockData) {
                     while (filaDedados.isEmpty()) {
-                        if (!this.isOn) {
-                            System.out.println("FINALIZANDO COMPANY");
+                        if (!serverCompany.isAlive()) {
                             break;
                         }
                         lockData.wait();
@@ -119,8 +113,8 @@ public class Company extends Thread {
                 }
 
                 if (dataCar != null) {
-
-                    payDriver(dataCar.getIdDriver(), 3.85);
+                    // TODO processar dados enviados pelos CARS
+                    payDriver(dataCar.getIdDriver(), 3.85);                   
                 }
 
             }
@@ -131,27 +125,75 @@ public class Company extends Thread {
         }
     }
 
+    /**
+     * Metodo que desliga o servidor do banco e encerra a Thread
+     */
     public void shutdown() {
         synchronized (lockData) {
-            botPayment.closeSocket();
-            serverCompany.stopServer();
-            this.isOn = false;
-            lockData.notifyAll();
+            try {
+                botPayment.closeSocket();
+                serverCompany.stopServer();
+                while (serverCompany.isAlive()) {
+                    sleep(100);
+                }
+                lockData.notifyAll();
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
         }
     }
 
+    /**
+     * Metódo privado para importada rotas da base de dados
+     * 
+     * @param qtd
+     */
     private void importarRotas(int qtd) {
+
         try {
             for (int i = 1; i <= qtd; i++) {
-                rotasExecutar.put(new Route(i));
+                addRotasExecutar(new Route(i));
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
+
+    }
+
+    private void addRotasExecutar(Route route) {
+        synchronized (lockRotas) {
+            rotasExecutar.add(route);
+        }
+    }
+
+    private void addRotasExecutando(Route route) {
+        synchronized (lockRotas) {
+            rotasExecutando.addLast(route);
+        }
+    }
+
+    private void addRotasExecutadas(Route route) {
+        synchronized (lockRotas) {
+            rotasExecutadas.addLast(route);
+        }
+    }
+
+    private Route removeRotasExecutar() {
+        synchronized (lockRotas) {
+            return rotasExecutar.poll();
+        }
+    }
+
+    private Route removeRotasExecutando(int index) {
+        synchronized (lockRotas) {
+            return rotasExecutando.get(index);
+        }
     }
 
     public void addCar(Car car) {
-        carros.put(car.getIdCar(), car);
+        synchronized (lockcar) {
+            carros.put(car.getIdCar(), car);
+        }
     }
 
     public String getLogin() {
@@ -159,8 +201,8 @@ public class Company extends Thread {
     }
 
     public synchronized Route getRoute() {
-        Route rota = this.rotasExecutar.poll();
-        rotasExecuntado.add(rota);
+        Route rota = removeRotasExecutar();
+        addRotasExecutando(rota);
         return rota;
     }
 

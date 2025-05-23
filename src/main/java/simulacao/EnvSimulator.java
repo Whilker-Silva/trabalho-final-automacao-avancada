@@ -35,10 +35,9 @@ public class EnvSimulator extends Thread {
 				listaDrivers[i].join();
 			}
 
-			//System.out.println("ENCERRANDO COMPANY");
+			System.out.println("\nRotas executadas com sucesso!\n");
 			Company.getInstance().shutdown();			
-			AlphaBank.getInstancia().shutdown();
-			// Encerra Alpha Bank
+			AlphaBank.getInstancia().shutdown();		
 
 		}
 

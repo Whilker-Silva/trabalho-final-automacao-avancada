@@ -38,8 +38,6 @@ public class AlphaBank extends Thread {
     private final ExecutorService poolTransacoes;
     private final ServerBank serverBank;
 
-    private boolean isOn;
-
     // Controle de lock dos metodos que acessam saldo e extrato
     private final Object lockTransacoes = new Object();
     private final Object lockContas = new Object();
@@ -86,8 +84,6 @@ public class AlphaBank extends Thread {
             System.err.println("Erro no servidor AlphaBank: " + e.getMessage());
         }
 
-        this.isOn = true;
-
     }
 
     /**
@@ -97,14 +93,13 @@ public class AlphaBank extends Thread {
     @Override
     public void run() {
 
-        while (this.isOn) {
+        while (serverBank.isAlive()) {
             try {
                 Transacao transacao = null;
 
                 synchronized (lockTransacoes) {
                     while (filaTransacoes.isEmpty()) {
-                        if (!this.isOn) {
-                            System.out.println("FINALIZANDO ALPHABANK");
+                        if (!serverBank.isAlive()) {
                             break;
                         }
                         lockTransacoes.wait();
@@ -128,9 +123,15 @@ public class AlphaBank extends Thread {
 
     public void shutdown() {
         synchronized (lockTransacoes) {
-            serverBank.stopServer();
-            this.isOn = false;
-            lockTransacoes.notifyAll();
+            try {
+                serverBank.stopServer();
+                while (serverBank.isAlive()) {
+                    sleep(100);
+                }
+                lockTransacoes.notifyAll();
+            } catch (Exception e) {
+
+            }
         }
     }
 
