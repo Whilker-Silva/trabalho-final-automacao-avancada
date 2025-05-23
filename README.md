@@ -9,6 +9,10 @@ Para configurar o ambiente, siga os passos abaixo:
    - [Visual Studio Code](https://code.visualstudio.com/Download)
 
 2. **Clonar o projeto**
+   Abra o terminal e navegue até a pasta que deseja clonar o projeto
+   ```bash
+   git clone https://github.com/Whilker-Silva/trabalho-final-automacao-avancada.git
+   ```
 
 3. **Abrir o projeto no Visual Studio Code:**
 
