@@ -29,7 +29,21 @@ public class Cliente extends Thread {
         }
     }
 
-    protected void enviaMensagem(String mensagem) {
+    public void closeSocket() {
+        try {
+            if (out != null) {
+                out.close();
+            }
+            if (socket != null && !socket.isClosed()) {
+                socket.close();
+                System.out.println("Socket do cliente " + name + " encerrado.");
+            }
+        } catch (IOException e) {
+            System.err.println("Erro ao fechar o socket do cliente " + name + ": " + e.getMessage());
+        }
+    }
+
+    public void enviaMensagem(String mensagem) {
         try {
             out.println(Crypto.criptografar(mensagem));
         } catch (Exception e) {

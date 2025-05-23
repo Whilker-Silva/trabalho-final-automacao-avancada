@@ -6,7 +6,9 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 import utils.Crypto;
 import utils.Json;
@@ -35,6 +37,8 @@ public class AlphaBank extends Thread {
     private final HashMap<String, Account> listaContas;
     private final ExecutorService poolTransacoes;
     private final ServerBank serverBank;
+
+    private boolean isOn;
 
     // Controle de lock dos metodos que acessam saldo e extrato
     private final Object lockTransacoes = new Object();
@@ -67,12 +71,23 @@ public class AlphaBank extends Thread {
      */
     private AlphaBank() {
         this.setName("AlphaBank");
-        this.poolTransacoes = Executors.newFixedThreadPool(20);
+        this.poolTransacoes = new ThreadPoolExecutor(0, Integer.MAX_VALUE, 10L, TimeUnit.MILLISECONDS,
+                new SynchronousQueue<>());
         this.filaTransacoes = new LinkedList<>();
         this.listaContas = new HashMap<>();
 
         this.serverBank = new ServerBank(4000, "AlphaBank");
-        this.start();
+        try {
+            if (serverBank.begin()) {
+                serverBank.start();
+            }
+
+        } catch (Exception e) {
+            System.err.println("Erro no servidor AlphaBank: " + e.getMessage());
+        }
+
+        this.isOn = true;
+
     }
 
     /**
@@ -81,15 +96,17 @@ public class AlphaBank extends Thread {
      */
     @Override
     public void run() {
-        serverBank.start();
 
-        while (serverBank.isAlive()) {
+        while (this.isOn) {
             try {
                 Transacao transacao = null;
 
                 synchronized (lockTransacoes) {
                     while (filaTransacoes.isEmpty()) {
-                        System.out.println("Aguardando solocitação de transação...");
+                        if (!this.isOn) {
+                            System.out.println("FINALIZANDO ALPHABANK");
+                            break;
+                        }
                         lockTransacoes.wait();
                     }
 
@@ -107,6 +124,14 @@ public class AlphaBank extends Thread {
             }
         }
         poolTransacoes.shutdown();
+    }
+
+    public void shutdown() {
+        synchronized (lockTransacoes) {
+            serverBank.stopServer();
+            this.isOn = false;
+            lockTransacoes.notifyAll();
+        }
     }
 
     /**

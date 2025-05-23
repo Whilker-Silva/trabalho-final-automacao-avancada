@@ -73,6 +73,10 @@ public class Driver extends Thread {
                 }
             }
         }
+        
+        System.out.printf("DRIVER %s FINALIZADO\n", login);
+        botPayment.closeSocket();
+        car.closeSocket();
     }
 
     private void solicitaRota() {

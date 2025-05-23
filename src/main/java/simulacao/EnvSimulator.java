@@ -1,69 +1,51 @@
 package simulacao;
 
-import java.io.IOException;
+import pkg.banco.AlphaBank;
+import pkg.company.Company;
+import pkg.driver.Driver;
 
-import de.tudresden.sumo.objects.SumoColor;
-import it.polito.appeal.traci.SumoTraciConnection;
-import pkg.sumo.Auto;
-import pkg.sumo.Itinerary;
-import pkg.sumo.TransportService;
+public class EnvSimulator extends Thread {
 
-public class EnvSimulator extends Thread{
+	private static final int QTD_DRIVERS = 100;
 
-    private SumoTraciConnection sumo;
+	private Driver[] listaDrivers;
 
-    public EnvSimulator(){ 
+	public EnvSimulator() {
+		setName("simulador");
+		AlphaBank.getInstancia().start();
+		Company.getInstance().start();
 
-    }
+		listaDrivers = new Driver[QTD_DRIVERS];
+		for (int i = 0; i < QTD_DRIVERS; i++) {
+			String login = "driver" + (i + 1);
+			String senha = "driver" + (i + 1);
+			listaDrivers[i] = new Driver(login, senha);
+			listaDrivers[i].setName(login);
+		}
+	}
 
-    public void run(){
-
-		/* SUMO */
-		String sumo_bin = "sumo-gui";		
-		String config_file = "map/map.sumo.cfg";
-		
-		// Sumo connection
-		this.sumo = new SumoTraciConnection(sumo_bin, config_file);
-		sumo.addOption("start", "1"); // auto-run on GUI show
-		sumo.addOption("quit-on-end", "1"); // auto-close on end
-
+	public void run() {
 		try {
-			sumo.runServer(12345);
 
-			Itinerary i1 = new Itinerary("data/dados2.xml", "0");
-			Itinerary i2 = new Itinerary("data/dados2.xml", "1");
-
-			if (i1.isOn()) {
-
-				// fuelType: 1-diesel, 2-gasoline, 3-ethanol, 4-hybrid
-				int fuelType = 2;
-				int fuelPreferential = 2;
-				double fuelPrice = 3.40;
-				int personCapacity = 1;
-				int personNumber = 1;
-
-				SumoColor green = new SumoColor(0, 255, 0, 126);
-				Auto a1 = new Auto(true, "CAR1", green,"D1", sumo, 500, fuelType, fuelPreferential, fuelPrice, personCapacity, personNumber);
-				SumoColor red = new SumoColor(255, 0, 0, 126);
-				Auto a2 = new Auto(true, "CAR2", red,"D2", sumo, 500, fuelType, fuelPreferential, fuelPrice, personCapacity, personNumber);
-
-				TransportService tS1 = new TransportService(true, "CAR1", i1, a1, sumo);
-				TransportService tS2 = new TransportService(true, "CAR2", i2, a2, sumo);
-				
-				Thread.sleep(5000);
-				tS1.start();
-				tS2.start();
+			for (int i = 0; i < QTD_DRIVERS; i++) {
+				listaDrivers[i].start();
 			}
 
-		
-		} catch (IOException e1) {
-			e1.printStackTrace();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
+			for (int i = 0; i < QTD_DRIVERS; i++) {
+				listaDrivers[i].join();
+			}
+
+			//System.out.println("ENCERRANDO COMPANY");
+			Company.getInstance().shutdown();			
+			AlphaBank.getInstancia().shutdown();
+			// Encerra Alpha Bank
+
+		}
+
+		catch (Exception e) {
 			e.printStackTrace();
 		}
 
-    }
+	}
 
 }

@@ -4,11 +4,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
-import pkg.banco.Account;
-import pkg.banco.AlphaBank;
 import pkg.banco.BotPayment;
 import pkg.banco.Transacao;
+import pkg.car.Car;
+import pkg.car.DataCar;
 import utils.Crypto;
 import utils.Json;
 import utils.Server;
@@ -19,61 +21,158 @@ import utils.Server;
  */
 public class Company extends Thread {
 
+    private static Company instancia;
+
     private final String login;
     private final String senha;
 
     private final ServerCompany serverCompany;
-    private final BotPayment botPayment;
+    private BotPayment botPayment;
 
-    private final Queue<Integer> filaDedados;
+    private final HashMap<String, Car> carros;
+    private final Queue<DataCar> filaDedados;
 
-    private final Queue<Route> rotasExecutar;
+    private final BlockingQueue<Route> rotasExecutar;
     private final ArrayList<Route> rotasExecuntado;
     private final ArrayList<Route> rotasExecutadas;
 
+    private final Object lockData = new Object();
+
+    private boolean isOn;
+
     /**
-     * Construtor da classe Company
+     * Método que criar um instancia única para a classe {@code Company}
+     * 
+     * @param login - String
+     * @param senha - String
+     * @return
+     */
+    public static synchronized Company getInstance() {
+        if (instancia == null) {
+            instancia = new Company("company", "company");
+        }
+        return instancia;
+    }
+
+    /**
+     * Construtor privado da classe Company
      * 
      * @param login - Login da conta no AlphaBank
      * @param senha - Senha da conta no AlphaBank
      */
-    public Company(String login, String senha) {
-
+    private Company(String login, String senha) {
+        setName("company");
         this.login = login;
         this.senha = senha;
 
         // Inicializa o Serve para comunicação com os Cars
-        serverCompany = new ServerCompany(4001, "Company");
-        serverCompany.start();
+        serverCompany = new ServerCompany(4001, login);
+        try {
+            if (serverCompany.begin()) {
+                serverCompany.start();
+            }
+
+        } catch (Exception e) {
+            System.err.println("Erro no servidor AlphaBank: " + e.getMessage());
+        }
 
         // Inicializa o BotPayment para realizar pagamentos aos Drivers
-        botPayment = new BotPayment(4000, login, senha, 10000000);
-        botPayment.start();
+        try {
+            botPayment = new BotPayment(login, senha, 10000000);
+            botPayment.start();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
 
         // Ininicailiza fila de dados a processar
         filaDedados = new LinkedList<>();
 
+        // HashMap com instancia de Cars
+        carros = new HashMap<>();
+
         // Inicializa lista de rotas (A executar, execuntado e executadas)
-        rotasExecutar = new LinkedList<>();
+        rotasExecutar = new LinkedBlockingQueue<>();
         rotasExecuntado = new ArrayList<>();
         rotasExecutadas = new ArrayList<>();
 
         this.importarRotas(200);
+
+        this.isOn = true;
     }
 
     @Override
     public void run() {
-        // TODO Processar fila de dados recebido pelos car e gerara relatórios
+        while (this.isOn) {
+            try {
+                DataCar dataCar = null;
+
+                synchronized (lockData) {
+                    while (filaDedados.isEmpty()) {
+                        if (!this.isOn) {
+                            System.out.println("FINALIZANDO COMPANY");
+                            break;
+                        }
+                        lockData.wait();
+                    }
+
+                    dataCar = filaDedados.poll();
+                }
+
+                if (dataCar != null) {
+
+                    payDriver(dataCar.getIdDriver(), 3.85);
+                }
+
+            }
+
+            catch (Exception e) {
+                System.err.println("Erro ao processar transação: " + e.getMessage());
+            }
+        }
+    }
+
+    public void shutdown() {
+        synchronized (lockData) {
+            botPayment.closeSocket();
+            serverCompany.stopServer();
+            this.isOn = false;
+            lockData.notifyAll();
+        }
     }
 
     private void importarRotas(int qtd) {
-        for (int i = 1; i <= qtd; i++) {
-            rotasExecutar.add(new Route(i));
+        try {
+            for (int i = 1; i <= qtd; i++) {
+                rotasExecutar.put(new Route(i));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+    }
+
+    public void addCar(Car car) {
+        carros.put(car.getIdCar(), car);
     }
 
     public String getLogin() {
         return login;
+    }
+
+    public synchronized Route getRoute() {
+        Route rota = this.rotasExecutar.poll();
+        rotasExecuntado.add(rota);
+        return rota;
+    }
+
+    private synchronized void payDriver(String destino, double valor) {
+        botPayment.solicitarTransferencia(destino, valor, senha);
+    }
+
+    private void adicionarTransacao(DataCar dataCar) {
+        synchronized (lockData) {
+            filaDedados.add(dataCar);
+            lockData.notify();
+        }
     }
 
     /**
@@ -87,9 +186,16 @@ public class Company extends Thread {
 
         @Override
         protected void processarMensagem(String msg) throws Exception {
-            Json.fromJson(Crypto.descriptografar(msg), Transacao.class);
-            // TODO Altera para tipo de mensagem correta (trocada com a classe Car) e
-            // adicionar na fila de processamento
+            try {
+                String msgDescriptografada = Crypto.descriptografar(msg);
+                DataCar dataCar = Json.fromJson(msgDescriptografada, DataCar.class);
+                adicionarTransacao(dataCar);
+            }
+
+            catch (Exception e) {
+                System.err.println("Erro ao processar mensagem: " + e.getMessage());
+                throw e;
+            }
         }
 
     }

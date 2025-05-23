@@ -1,6 +1,7 @@
 package utils;
 
 import java.io.BufferedReader;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.ServerSocket;
@@ -9,15 +10,24 @@ import java.net.Socket;
 public abstract class Server extends Thread {
 
     // Atributos
+
     private ServerSocket serverSocket;
     private boolean running;
     private String name;
     private int port;
 
     public Server(int port, String name) {
+        setName("Srv_" + name);
         this.running = false;
         this.name = name;
         this.port = port;
+    }
+
+    public boolean begin() throws IOException {
+        serverSocket = new ServerSocket(port);
+        running = true;
+        System.out.println("Server " + name + " iniciada na porta " + port);
+        return true;
     }
 
     /**
@@ -26,10 +36,6 @@ public abstract class Server extends Thread {
     @Override
     public void run() {
         try {
-            serverSocket = new ServerSocket(port);
-            running = true;
-            System.out.println("Server " + name + " iniciada na porta " + port);
-
             while (running) {
                 Socket clientSocket = serverSocket.accept();
                 serverCallback(clientSocket);
@@ -37,11 +43,7 @@ public abstract class Server extends Thread {
         }
 
         catch (Exception e) {
-            System.err.println("Erro no servidor " + name + ": " + e.getMessage());
-        }
-
-        finally {
-            stopServer();
+            System.err.println("Servidor " + name + ": " + e.getMessage());
         }
     }
 
@@ -50,7 +52,6 @@ public abstract class Server extends Thread {
         try {
             if (serverSocket != null && !serverSocket.isClosed()) {
                 serverSocket.close();
-                System.out.println(getClass().getSimpleName() + " encerrado.");
             }
         }
 
@@ -61,14 +62,14 @@ public abstract class Server extends Thread {
 
     private void serverCallback(Socket socket) {
 
-        new Thread(() -> {
+        Thread clientThread = new Thread(() -> {
             try (
                     BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
                     PrintWriter out = new PrintWriter(socket.getOutputStream(), true)) {
 
                 String msg;
                 while ((msg = in.readLine()) != null) {
-                   processarMensagem(msg);
+                    processarMensagem(msg);
                 }
             }
 
@@ -83,9 +84,11 @@ public abstract class Server extends Thread {
                     System.err.println("Erro ao fechar socket do cliente");
                 }
             }
-        }, "clt_"+socket.getLocalPort()).start();
+        }, "clt_" + socket.getLocalPort());
+
+        clientThread.start();
 
     }
 
-    protected abstract void processarMensagem(String msg) throws Exception ;
+    protected abstract void processarMensagem(String msg) throws Exception;
 }
