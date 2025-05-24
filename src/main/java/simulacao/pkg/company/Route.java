@@ -14,9 +14,9 @@ public class Route {
 
 	private static NodeList nodeList;
 
-	private String idRoute;
 	private SumoStringList edges;
-	private boolean on;
+	private String idRoute;
+	private boolean acabou;
 
 	public Route(int idRoute) {
 		try {
@@ -24,9 +24,9 @@ public class Route {
 				importXML("data/rotas.xml");
 			}
 
-			this.idRoute = "route" + Integer.toString(idRoute);
+			this.idRoute = "route" + idRoute;
 			extairEdges(idRoute);
-			this.on = true;
+			this.acabou = false;
 		}
 
 		catch (Exception e) {
@@ -67,10 +67,10 @@ public class Route {
 	}
 
 	public void finish() {
-		this.on = false;
+		this.acabou = true;
 	}
 
-	public boolean isOn(){
-		return this.on;
+	public boolean acabou() {
+		return acabou;
 	}
 }

@@ -4,14 +4,15 @@ public class Principal {
 
     public static void main(String[] args) {
 
-        EnvSimulator ev = new EnvSimulator();
-        ev.setName("MAIN");
-        ev.start();
-
         try {
+            EnvSimulator ev = new EnvSimulator();
+            ev.start();
             ev.join();
-        } catch (Exception e) {
+        }
+
+        catch (InterruptedException e) {
             e.printStackTrace();
         }
+
     }
 }

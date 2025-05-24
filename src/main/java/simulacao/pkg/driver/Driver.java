@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
+
 import simulacao.pkg.banco.BotPayment;
 import simulacao.pkg.car.Car;
 import simulacao.pkg.company.Company;
@@ -11,6 +12,8 @@ import simulacao.pkg.company.Route;
 
 public class Driver extends Thread {
 
+    private static int counter = 0;
+    private static final Object lockCounter = new Object();
     private final Object lockRotas = new Object();
 
     private String login;
@@ -23,6 +26,7 @@ public class Driver extends Thread {
     private final ArrayList<Route> rotasExecutadas;
 
     public Driver(String login, String senha) {
+
         setName(login);
         this.login = login;
         this.senha = senha;
@@ -40,6 +44,10 @@ public class Driver extends Thread {
         rotasExecutar = new LinkedList<>();
         rotasExecutando = new ArrayList<>();
         rotasExecutadas = new ArrayList<>();
+
+        synchronized (lockCounter) {
+            counter++;
+        }
     }
 
     @Override
@@ -74,8 +82,13 @@ public class Driver extends Thread {
             }
         }
 
+        synchronized (lockCounter) {
+            counter--;
+        }
+
+        System.out.printf("%s encerrado\n", login);
         botPayment.closeSocket();
-        car.closeSocket();
+        // car.closeSocket();
 
     }
 
@@ -128,6 +141,12 @@ public class Driver extends Thread {
     private boolean executarIsEmpty() {
         synchronized (lockRotas) {
             return rotasExecutar.isEmpty();
+        }
+    }
+
+    public static int getCounter() {
+        synchronized (lockCounter) {
+            return counter;
         }
     }
 

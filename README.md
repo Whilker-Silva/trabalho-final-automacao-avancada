@@ -3,10 +3,12 @@
 Para configurar o ambiente, siga os passos abaixo:
 
 1. **Baixar e instalar os seguintes componentes:**
-   - [Java Development Kit](https://aws.amazon.com/corretto/)
-   - [SUMO - Simulation of Urban MObility](https://eclipse.dev/sumo/)
-   - [Apache Maven](https://maven.apache.org/download.cgi)
+   
+   - [SUMO - Simulation of Urban MObility](https://eclipse.dev/sumo/)   
    - [Visual Studio Code](https://code.visualstudio.com/Download)
+   - [Java JDK](https://aws.amazon.com/corretto/)
+   - [Maven](https://maven.apache.org/download.cgi)   
+   - [Git](https://git-scm.com/downloads)
 
 2. **Clonar o projeto**
    Abra o terminal e navegue até a pasta que deseja clonar o projeto

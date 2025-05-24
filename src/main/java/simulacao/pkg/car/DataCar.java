@@ -1,34 +1,132 @@
 package simulacao.pkg.car;
 
-public class DataCar {
+import simulacao.pkg.company.Route;
+import utils.Cliente;
 
-    // private long timestamp;
+public class DataCar implements Runnable {
+
     private String idCar;
-    private String idRoute;
     private String idDriver;
+    private String combustivel;
+
+    private long timestamp;
+
+    private Route route;
+    private double speed;
+
+    private double distancia;
+    private double fuelConsumption;
+    private double co2Emission;
+    private double latitude;
+    private double longitude;
+
+    private Cliente clienteCar;
 
     /**
      * 
      * @param idCar
-     * @param idRoute
      * @param idDriver
      */
-    public DataCar(String idCar, String idRoute, String idDriver) {
-        // this.timestamp = 0;
+    public DataCar(String idCar, String idDriver) {
+
         this.idCar = idCar;
-        this.idRoute = idRoute;
         this.idDriver = idDriver;
+        this.combustivel = "Gasolina";
+
+        clienteCar = new Cliente(4001, idCar);
+        clienteCar.start();
+    }
+
+    @Override
+    public void run() {
+
+        try {
+
+        }
+
+        catch (Exception e) {
+            e.printStackTrace();
+        }
+
     }
 
     public String getIdCar() {
         return idCar;
     }
 
-    public String getIdRoute() {
-        return idRoute;
-    }
-
     public String getIdDriver() {
         return idDriver;
+    }
+
+    public String getCombustivel() {
+        return combustivel;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public double getSpeed() {
+        return speed;
+    }
+
+    public double getDistancia() {
+        return distancia;
+    }
+
+    public double getFuelConsumption() {
+        return fuelConsumption;
+    }
+
+    public double getCo2Emission() {
+        return co2Emission;
+    }
+
+    public double getLatitude() {
+        return latitude;
+    }
+
+    public double getLongitude() {
+        return longitude;
+    }
+
+    public String getIdRoute() {
+        return route.getIdRoute();
+    }
+
+    public boolean rotaAcabou() {
+        return route.acabou();
+    }
+
+    public void setSpeed(double speed) {
+        this.speed = speed;
+    }
+
+    public void setDistancia(double distancia) {
+        this.distancia = distancia;
+    }
+
+    public void setFuelConsumption(double fuelConsumption) {
+        this.fuelConsumption = fuelConsumption;
+    }
+
+    public void setCo2Emission(double co2Emission) {
+        this.co2Emission = co2Emission;
+    }
+
+    public void setLatitude(double latitude) {
+        this.latitude = latitude;
+    }
+
+    public void setLongitude(double longitude) {
+        this.longitude = longitude;
+    }
+
+    public void setRoute(Route route) {
+        this.route = route;
+    }
+
+    public void setTimestamp() {
+        this.timestamp = System.nanoTime();
     }
 }
