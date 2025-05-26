@@ -4,7 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import simulacao.EnvSimulator;
 import simulacao.pkg.banco.BotPayment;
 import simulacao.pkg.car.Car;
 import simulacao.pkg.car.DataCar;
