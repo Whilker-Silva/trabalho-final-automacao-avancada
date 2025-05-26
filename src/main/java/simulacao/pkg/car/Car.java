@@ -16,9 +16,9 @@ public class Car extends Vehicle implements Runnable {
     private SumoTraciConnection sumo;
     private String idCar;
     private Route route;
-    private DataCar carData;
     private boolean passoExutado;
     private boolean cadastrou;
+     private DataCar carData;
 
     public Car(String idDriver) {
 
@@ -26,12 +26,7 @@ public class Car extends Vehicle implements Runnable {
             qtdCars += 1;
             idCar = "car" + qtdCars;
         }
-        this.carData = new DataCar(idCar, idDriver);
-        this.sumo = EnvSimulator.getSumo();
-
-        Thread dataThread = new Thread(carData);
-        dataThread.setName("data_" + idCar);
-        dataThread.start();
+        this.sumo = EnvSimulator.getSumo();       
 
         cadastrou = false;
 
@@ -134,7 +129,7 @@ public class Car extends Vehicle implements Runnable {
                 double co2 = (double) sumo.do_job_get(getCO2Emission(idCar));
                 SumoPosition2D posicao2D = (SumoPosition2D) sumo.do_job_get(getPosition(idCar));
                 carData.setSpeed(speed);
-                carData.setDistancia(distancia);
+                carData.setDistancia(distancia/1000);
                 carData.setFuelConsumption(consumo);
                 carData.setCo2Emission(co2);
                 carData.setLongitude(posicao2D.x);
@@ -144,7 +139,8 @@ public class Car extends Vehicle implements Runnable {
 
             else if (cadastrou) {
                 route.finish();
-                EnvSimulator.passoExecutado();  
+                EnvSimulator.passoExecutado(); 
+                carData.setLastDistancia();
                 //System.out.println("passo " + idCar + " rota finalizada");              
             }
 
@@ -181,6 +177,10 @@ public class Car extends Vehicle implements Runnable {
 
     public String getIdCar() {
         return idCar;
+    }
+
+    public void setCarData(DataCar carData) {
+        this.carData = carData;
     }
 
 }

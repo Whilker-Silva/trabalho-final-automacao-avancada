@@ -107,6 +107,9 @@ public class Company extends Thread {
                             break;
                         }
                         lockData.wait();
+
+                        processarMsg(filaDedados.poll());
+
                     }
 
                     dataCar = filaDedados.poll();
@@ -114,7 +117,7 @@ public class Company extends Thread {
 
                 if (dataCar != null) {
                     // TODO processar dados enviados pelos CARS
-                    payDriver(dataCar.getIdDriver(), 3.85);                   
+                    //payDriver(dataCar.getIdDriver(), 3.85);
                 }
 
             }
@@ -123,6 +126,14 @@ public class Company extends Thread {
                 System.err.println("Erro ao processar transação: " + e.getMessage());
             }
         }
+    }
+
+    private void processarMsg(DataCar dados) {
+
+        if (dados.getPagamento()) {
+            botPayment.solicitarTransferencia(dados.getIdDriver(), 3.25, senha);
+        }
+
     }
 
     /**
@@ -210,7 +221,7 @@ public class Company extends Thread {
         botPayment.solicitarTransferencia(destino, valor, senha);
     }
 
-    private void adicionarTransacao(DataCar dataCar) {
+    private void adicionarDados(DataCar dataCar) {
         synchronized (lockData) {
             filaDedados.add(dataCar);
             lockData.notify();
@@ -231,8 +242,7 @@ public class Company extends Thread {
             try {
                 String msgDescriptografada = Crypto.descriptografar(msg);
                 DataCar dataCar = Json.fromJson(msgDescriptografada, DataCar.class);
-                //adicionarTransacao(dataCar);
-                //System.out.println(msgDescriptografada);
+                adicionarDados(dataCar);
             }
 
             catch (Exception e) {

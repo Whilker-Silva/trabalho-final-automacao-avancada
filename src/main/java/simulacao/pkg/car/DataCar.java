@@ -16,11 +16,14 @@ public class DataCar implements Runnable {
     private Route route;
     private double speed;
 
+    private double lastDistancia;
     private double distancia;
     private double fuelConsumption;
     private double co2Emission;
     private double latitude;
     private double longitude;
+
+    private boolean solicitarPagamento;
 
     private transient Cliente clienteCar;
 
@@ -46,6 +49,8 @@ public class DataCar implements Runnable {
 
         timestamp = 0;
         lastTimestamp = 0;
+        lastDistancia = 0;
+        solicitarPagamento = false;
     }
 
     @Override
@@ -55,7 +60,16 @@ public class DataCar implements Runnable {
             while (clienteCar.socketIsConnected()) {
 
                 while (timestamp == lastTimestamp) {
-                    Thread.sleep(0,100000);
+                    Thread.sleep(0, 100000);
+                }                
+
+                if (distancia - lastDistancia >= 1) {
+                    solicitarPagamento = true;
+                    lastDistancia = distancia;
+                }
+
+                else {
+                    solicitarPagamento = false;
                 }
 
                 String msg = Json.toJson(this);
@@ -89,6 +103,10 @@ public class DataCar implements Runnable {
 
     public double getSpeed() {
         return speed;
+    }
+
+    public boolean getPagamento() {
+        return solicitarPagamento;
     }
 
     public double getDistancia() {
@@ -125,6 +143,7 @@ public class DataCar implements Runnable {
 
     public void setDistancia(double distancia) {
         this.distancia = distancia;
+        
     }
 
     public void setFuelConsumption(double fuelConsumption) {
@@ -149,6 +168,10 @@ public class DataCar implements Runnable {
 
     public void setTimestamp() {
         this.timestamp = System.nanoTime();
-        //notifyAll();
+        // notifyAll();
+    }
+
+    public void setLastDistancia() {
+        this.lastDistancia = 0;
     }
 }

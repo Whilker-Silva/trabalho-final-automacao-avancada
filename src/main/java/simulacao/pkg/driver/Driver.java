@@ -7,6 +7,7 @@ import java.util.Queue;
 import simulacao.EnvSimulator;
 import simulacao.pkg.banco.BotPayment;
 import simulacao.pkg.car.Car;
+import simulacao.pkg.car.DataCar;
 import simulacao.pkg.company.Company;
 import simulacao.pkg.company.Route;
 
@@ -20,6 +21,7 @@ public class Driver extends Thread {
     private String senha;
     private BotPayment botPayment;
     private Car car;
+    private DataCar carData;
 
     private final Queue<Route> rotasExecutar;
     private final ArrayList<Route> rotasExecutando;
@@ -33,6 +35,13 @@ public class Driver extends Thread {
 
         car = new Car(login);
         Company.getInstance().addCar(car);
+
+        this.carData = new DataCar(car.getIdCar(), login);
+        Thread dataThread = new Thread(carData);
+        dataThread.setName("data_" + car.getIdCar());
+        dataThread.start();
+
+        car.setCarData(carData);
 
         try {
             botPayment = new BotPayment(login, senha, 1000);
@@ -82,7 +91,7 @@ public class Driver extends Thread {
         }
 
         synchronized (lockCounter) {
-            counter--;           
+            counter--;
         }
 
         // System.out.printf("%s encerrado\n", login);

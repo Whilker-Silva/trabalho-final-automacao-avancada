@@ -9,8 +9,8 @@ import simulacao.pkg.driver.Driver;
 
 public class EnvSimulator extends Thread {
 
-	private static final int QTD_DRIVERS = 100;
-	private static final int stepTime = 4;
+	private static final int QTD_DRIVERS = 10;
+	private static final int stepTime = 50;
 
 	private static Object lock = new Object();
 	private static SumoTraciConnection sumo;
@@ -27,6 +27,7 @@ public class EnvSimulator extends Thread {
 		sumo = new SumoTraciConnection(sumoBin, configFile);
 		sumo.addOption("start", "1"); // auto-run on GUI show
 		sumo.addOption("quit-on-end", "1"); // auto-close on end
+		sumo.addOption("step-length", "0.5");
 
 		AlphaBank.getInstancia().start();
 		Company.getInstance().start();
