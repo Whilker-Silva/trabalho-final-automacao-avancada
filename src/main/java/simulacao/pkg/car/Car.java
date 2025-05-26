@@ -59,7 +59,7 @@ public class Car extends Vehicle implements Runnable {
                     passoExutado = false;
                 }
 
-                Thread.sleep(0, 100000);
+                Thread.sleep(0, 1);
 
             }
 

@@ -10,10 +10,9 @@ import simulacao.pkg.driver.Driver;
 public class EnvSimulator extends Thread {
 
 	private static final int QTD_DRIVERS = 100;
-	private static final int stepTime = 2;
+	private static final int stepTime = 4;
 
 	private static Object lock = new Object();
-	private static Object lockshare = new Object();
 	private static SumoTraciConnection sumo;
 	private Driver[] listaDrivers;
 	private static int carReady;
@@ -50,8 +49,6 @@ public class EnvSimulator extends Thread {
 				listaDrivers[i].start();
 			}
 
-
-
 			while (Driver.getCounter() > 0) {
 				synchronized (lock) {
 					sumo.do_timestep();
@@ -60,14 +57,20 @@ public class EnvSimulator extends Thread {
 
 					carReady = 0;
 					int respostas = Driver.getCounter();
+
+					long start = System.currentTimeMillis();
+					long timeout = 100;
 					while (carReady < respostas) {
 						lock.wait();
+						if(System.currentTimeMillis() - start > timeout){
+							carReady = respostas;
+						}
 					}
 
-					//sleep(100);
+					// sleep(100);
 
-					//System.out.println("");
-					//System.out.println("");
+					// System.out.println("");
+					// System.out.println("");
 
 					executarPasso = false;
 				}
