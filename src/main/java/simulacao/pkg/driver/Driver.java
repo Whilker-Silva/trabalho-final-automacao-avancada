@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
-
+import simulacao.EnvSimulator;
 import simulacao.pkg.banco.BotPayment;
 import simulacao.pkg.car.Car;
 import simulacao.pkg.company.Company;
@@ -52,12 +52,11 @@ public class Driver extends Thread {
 
     @Override
     public void run() {
+        try {
+            // Lança a Thred car para executar a rota e aguarda a mesma finalizar
+            solicitaRota();
 
-        solicitaRota();
-
-        while (!executarIsEmpty()) {
-
-            try {
+            while (!executarIsEmpty()) {
 
                 // Move rota a executar para rotas em execução
                 Route rotaExecutando = removeRotasExecutar();
@@ -66,8 +65,8 @@ public class Driver extends Thread {
                 // configura a rota a ser executa pelo
                 car.setRoute(rotaExecutando);
 
-                // Lança a Thred car para executar a rota e aguarda a mesma finalizar
                 Thread threadCar = new Thread(car);
+                threadCar.setName(car.getIdCar());
                 threadCar.start();
                 threadCar.join();
 
@@ -77,18 +76,17 @@ public class Driver extends Thread {
 
                 // Solicita uma nova rota
                 solicitaRota();
-            } catch (Exception e) {
-                e.printStackTrace();
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         synchronized (lockCounter) {
-            counter--;
+            counter--;           
         }
 
-        System.out.printf("%s encerrado\n", login);
+        // System.out.printf("%s encerrado\n", login);
         botPayment.closeSocket();
-        // car.closeSocket();
 
     }
 

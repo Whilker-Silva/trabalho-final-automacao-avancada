@@ -231,7 +231,8 @@ public class Company extends Thread {
             try {
                 String msgDescriptografada = Crypto.descriptografar(msg);
                 DataCar dataCar = Json.fromJson(msgDescriptografada, DataCar.class);
-                adicionarTransacao(dataCar);
+                //adicionarTransacao(dataCar);
+                //System.out.println(msgDescriptografada);
             }
 
             catch (Exception e) {

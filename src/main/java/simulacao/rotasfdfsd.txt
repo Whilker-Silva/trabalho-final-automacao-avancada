@@ -1,0 +1,91 @@
+passo car2 não cadastrado
+passo car5 não cadastrado
+passo car9 não cadastrado
+passo car8 não cadastrado
+passo car1 não cadastrado
+passo car6 não cadastrado
+passo car4 não cadastrado
+passo car3 não cadastrado
+passo car7 não cadastrado
+passo car10 não cadastrado
+
+
+passo car6 não cadastrado
+passo car1 sensor atulizado
+passo car10 sensor atulizado
+passo car5 sensor atulizado
+passo car2 sensor atulizado
+passo car4 sensor atulizado
+passo car8 sensor atulizado
+passo car7 sensor atulizado
+passo car3 sensor atulizado
+passo car9 sensor atulizado
+
+
+passo car6 não cadastrado
+passo car8 sensor atulizado
+passo car2 sensor atulizado
+passo car5 sensor atulizado
+passo car7 sensor atulizado
+passo car1 sensor atulizado
+passo car10 sensor atulizado
+passo car9 sensor atulizado
+passo car3 sensor atulizado
+passo car4 sensor atulizado
+
+
+passo car6 não cadastrado
+passo car4 sensor atulizado
+passo car5 sensor atulizado
+passo car2 sensor atulizado
+passo car10 sensor atulizado
+passo car3 sensor atulizado
+passo car7 sensor atulizado
+passo car1 sensor atulizado
+passo car9 sensor atulizado
+passo car8 sensor atulizado
+
+
+passo car10 sensor atulizado
+passo car3 sensor atulizado
+passo car6 não cadastrado
+passo car8 sensor atulizado
+passo car7 sensor atulizado
+passo car4 sensor atulizado
+passo car2 sensor atulizado
+passo car9 sensor atulizado
+passo car5 sensor atulizado
+passo car1 sensor atulizado
+
+
+passo car6 não cadastrado
+passo car3 sensor atulizado
+passo car10 sensor atulizado
+passo car2 sensor atulizado
+passo car7 sensor atulizado
+passo car4 sensor atulizado
+passo car9 sensor atulizado
+passo car1 sensor atulizado
+passo car8 sensor atulizado
+passo car5 sensor atulizado
+
+
+passo car4 sensor atulizado
+passo car9 sensor atulizado
+passo car10 sensor atulizado
+passo car6 não cadastrado
+passo car2 sensor atulizado
+passo car3 sensor atulizado
+passo car8 sensor atulizado
+passo car7 sensor atulizado
+passo car1 sensor atulizado
+passo car5 sensor atulizado
+
+
+passo car6 não cadastrado
+passo car1 sensor atulizado
+passo car10 sensor atulizado
+passo car2 sensor atulizado
+passo car8 sensor atulizado
+passo car5 sensor atulizado
+passo car9 sensor atulizado

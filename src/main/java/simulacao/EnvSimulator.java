@@ -9,19 +9,21 @@ import simulacao.pkg.driver.Driver;
 
 public class EnvSimulator extends Thread {
 
-	private static final int QTD_DRIVERS = 10;
+	private static final int QTD_DRIVERS = 100;
+	private static final int stepTime = 2;
 
+	private static Object lock = new Object();
+	private static Object lockshare = new Object();
 	private static SumoTraciConnection sumo;
-	private String sumoBin;
-	private String configFile;
 	private Driver[] listaDrivers;
-
+	private static int carReady;
+	private static boolean executarPasso;
 
 	public EnvSimulator() {
 		setName("simulador");
 
-		sumoBin = "sumo-gui";
-		configFile = "map/map.sumo.cfg";
+		String sumoBin = "sumo-gui";
+		String configFile = "map/map.sumo.cfg";
 
 		sumo = new SumoTraciConnection(sumoBin, configFile);
 		sumo.addOption("start", "1"); // auto-run on GUI show
@@ -39,7 +41,7 @@ public class EnvSimulator extends Thread {
 		}
 	}
 
-	public void run() {		
+	public void run() {
 		try {
 
 			sumo.runServer(12345);
@@ -48,15 +50,34 @@ public class EnvSimulator extends Thread {
 				listaDrivers[i].start();
 			}
 
+
+
 			while (Driver.getCounter() > 0) {
-				sumo.do_timestep();
-				sleep(10);
+				synchronized (lock) {
+					sumo.do_timestep();
+					sleep(stepTime);
+					executarPasso = true;
+
+					carReady = 0;
+					int respostas = Driver.getCounter();
+					while (carReady < respostas) {
+						lock.wait();
+					}
+
+					//sleep(100);
+
+					//System.out.println("");
+					//System.out.println("");
+
+					executarPasso = false;
+				}
+
 			}
 
 			System.out.println("\nRotas executadas com sucesso!\n");
 			Company.getInstance().shutdown();
 			AlphaBank.getInstancia().shutdown();
-
+			sumo.close();
 		}
 
 		catch (IOException e1) {
@@ -70,6 +91,21 @@ public class EnvSimulator extends Thread {
 
 	public static SumoTraciConnection getSumo() {
 		return sumo;
+	}
+
+	public static int getSteptime() {
+		return stepTime;
+	}
+
+	public static void passoExecutado() {
+		synchronized (lock) {
+			carReady++;
+			lock.notifyAll();
+		}
+	}
+
+	public static boolean getExecutarPasso() {
+		return executarPasso;
 	}
 
 }

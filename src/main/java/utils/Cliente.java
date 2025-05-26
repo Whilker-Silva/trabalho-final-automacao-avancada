@@ -51,4 +51,8 @@ public class Cliente extends Thread {
         }
     }
 
+    public boolean socketIsConnected(){
+        return socket.isConnected();
+    }
+
 }

@@ -2,6 +2,7 @@ package simulacao.pkg.car;
 
 import simulacao.pkg.company.Route;
 import utils.Cliente;
+import utils.Json;
 
 public class DataCar implements Runnable {
 
@@ -9,6 +10,7 @@ public class DataCar implements Runnable {
     private String idDriver;
     private String combustivel;
 
+    private long lastTimestamp;
     private long timestamp;
 
     private Route route;
@@ -20,7 +22,7 @@ public class DataCar implements Runnable {
     private double latitude;
     private double longitude;
 
-    private Cliente clienteCar;
+    private transient Cliente clienteCar;
 
     /**
      * 
@@ -35,12 +37,31 @@ public class DataCar implements Runnable {
 
         clienteCar = new Cliente(4001, idCar);
         clienteCar.start();
+
+        try {
+            Thread.sleep(5);
+        } catch (Exception e) {
+            // TODO: handle exception
+        }
+
+        timestamp = 0;
+        lastTimestamp = 0;
     }
 
     @Override
     public void run() {
 
         try {
+            while (clienteCar.socketIsConnected()) {
+
+                while (timestamp == lastTimestamp) {
+                    Thread.sleep(0,100000);
+                }
+
+                String msg = Json.toJson(this);
+                clienteCar.enviaMensagem(msg);
+                lastTimestamp = timestamp;
+            }
 
         }
 
@@ -128,5 +149,6 @@ public class DataCar implements Runnable {
 
     public void setTimestamp() {
         this.timestamp = System.nanoTime();
+        //notifyAll();
     }
 }
