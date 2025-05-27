@@ -75,7 +75,7 @@ public class Transacao implements Runnable {
                 // Realiza a transação
                 contaOrigem.debitar(this, senha);
                 contaDestino.depositar(this);
-                System.out.printf("Transferencia de R$%.2f realizada de %s para %s\n", valor, origem, destino);
+                //System.out.printf("Transferencia de R$%.2f realizada de %s para %s\n", valor, origem, destino);
             }
         }
     }

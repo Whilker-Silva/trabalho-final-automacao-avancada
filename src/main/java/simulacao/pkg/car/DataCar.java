@@ -15,9 +15,9 @@ public class DataCar implements Runnable {
 
     private Route route;
     private double speed;
-
     private double lastDistancia;
     private double distancia;
+    private double odometro;
     private double fuelConsumption;
     private double co2Emission;
     private double latitude;
@@ -50,6 +50,9 @@ public class DataCar implements Runnable {
         timestamp = 0;
         lastTimestamp = 0;
         lastDistancia = 0;
+        fuelConsumption = 0;
+        odometro = 0;
+
         solicitarPagamento = false;
     }
 
@@ -60,12 +63,12 @@ public class DataCar implements Runnable {
             while (clienteCar.socketIsConnected()) {
 
                 while (timestamp == lastTimestamp) {
-                    Thread.sleep(0, 100000);
-                }                
+                    Thread.sleep(0, 100);
+                }
 
-                if (distancia - lastDistancia >= 1) {
+                if (odometro - lastDistancia >= 1) {
                     solicitarPagamento = true;
-                    lastDistancia = distancia;
+                    lastDistancia = odometro;
                 }
 
                 else {
@@ -142,12 +145,16 @@ public class DataCar implements Runnable {
     }
 
     public void setDistancia(double distancia) {
+
+        if (distancia == 0) {
+            this.distancia = 0;
+        }
+        this.odometro += distancia - this.distancia;
         this.distancia = distancia;
-        
     }
 
     public void setFuelConsumption(double fuelConsumption) {
-        this.fuelConsumption = fuelConsumption;
+        this.fuelConsumption += fuelConsumption;
     }
 
     public void setCo2Emission(double co2Emission) {
@@ -168,10 +175,5 @@ public class DataCar implements Runnable {
 
     public void setTimestamp() {
         this.timestamp = System.nanoTime();
-        // notifyAll();
-    }
-
-    public void setLastDistancia() {
-        this.lastDistancia = 0;
     }
 }

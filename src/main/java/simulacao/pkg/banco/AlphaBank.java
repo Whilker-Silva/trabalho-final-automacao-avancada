@@ -106,6 +106,7 @@ public class AlphaBank extends Thread {
                     }
 
                     transacao = filaTransacoes.poll();
+                    lockTransacoes.notifyAll();
                 }
 
                 if (transacao != null) {
@@ -124,6 +125,10 @@ public class AlphaBank extends Thread {
     public void shutdown() {
         synchronized (lockTransacoes) {
             try {
+                while (!filaTransacoes.isEmpty()) {
+                    lockTransacoes.wait();
+                }
+
                 serverBank.stopServer();
                 while (serverBank.isAlive()) {
                     sleep(100);

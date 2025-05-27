@@ -9,6 +9,9 @@ import simulacao.pkg.car.Car;
 import simulacao.pkg.car.DataCar;
 import simulacao.pkg.company.Company;
 import simulacao.pkg.company.Route;
+import simulacao.pkg.fuelStation.FuelStation;
+import utils.Crypto;
+import utils.Json;
 
 public class Driver extends Thread {
 
@@ -26,13 +29,15 @@ public class Driver extends Thread {
     private final ArrayList<Route> rotasExecutando;
     private final ArrayList<Route> rotasExecutadas;
 
+    private final Object lockAbastece = new Object();
+
     public Driver(String login, String senha) {
 
         setName(login);
         this.login = login;
         this.senha = senha;
 
-        car = new Car(login);
+        car = new Car(login, lockAbastece);
         Company.getInstance().addCar(car);
 
         this.carData = new DataCar(car.getIdCar(), login);
@@ -76,7 +81,26 @@ public class Driver extends Thread {
                 Thread threadCar = new Thread(car);
                 threadCar.setName(car.getIdCar());
                 threadCar.start();
-                threadCar.join();
+
+                while (threadCar.isAlive()) {
+
+                    synchronized (lockAbastece) {
+                        while (!car.getAbastecendo() && car.excutandoRota()) {
+                            lockAbastece.wait();
+                        }
+                    }
+
+                    if (car.excutandoRota()) {
+                        abastecer();
+
+                        synchronized (lockAbastece) {
+                            while (car.getAbastecendo()) {
+                                lockAbastece.wait();
+                            }
+                        }
+                    }
+
+                }
 
                 // Move rota para rotas executadas
                 Route finalizada = removeRotasExecutando(0);
@@ -85,7 +109,9 @@ public class Driver extends Thread {
                 // Solicita uma nova rota
                 solicitaRota();
             }
-        } catch (Exception e) {
+        }
+
+        catch (Exception e) {
             e.printStackTrace();
         }
 
@@ -99,15 +125,24 @@ public class Driver extends Thread {
     }
 
     private void solicitaRota() {
-        Route rota = Company.getInstance().getRoute();
-        if (rota != null) {
-            addRotasExecutar(rota);
+        String rotaCriptografada = Company.getInstance().getRoute();
+        Route rota;
+        try {
+            rota = Json.fromJson(Crypto.descriptografar(rotaCriptografada), Route.class);
+            if (rota != null) {
+                addRotasExecutar(rota);
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
+
     }
 
-    public void pagarAbastecimento(double litros) {
+    public void abastecer() {
+        double litros = 1; // calcular
         double valor = litros * 5.87;
-        botPayment.solicitarTransferencia("fuelStation", valor, senha);
+        FuelStation.abastecer(car, litros);
+        //botPayment.solicitarTransferencia("fuelStation", valor, senha);
     }
 
     public String getLogin() {

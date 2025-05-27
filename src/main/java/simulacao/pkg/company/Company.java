@@ -117,7 +117,7 @@ public class Company extends Thread {
 
                 if (dataCar != null) {
                     // TODO processar dados enviados pelos CARS
-                    //payDriver(dataCar.getIdDriver(), 3.85);
+                    // payDriver(dataCar.getIdDriver(), 3.85);
                 }
 
             }
@@ -130,8 +130,10 @@ public class Company extends Thread {
 
     private void processarMsg(DataCar dados) {
 
-        if (dados.getPagamento()) {
-            botPayment.solicitarTransferencia(dados.getIdDriver(), 3.25, senha);
+        if (dados != null) {
+            if (dados.getPagamento()) {
+                botPayment.solicitarTransferencia(dados.getIdDriver(), 3.25, senha);
+            }
         }
 
     }
@@ -211,10 +213,15 @@ public class Company extends Thread {
         return login;
     }
 
-    public synchronized Route getRoute() {
+    public synchronized String getRoute() {
         Route rota = removeRotasExecutar();
         addRotasExecutando(rota);
-        return rota;
+
+        try {
+            return Crypto.criptografar(Json.toJson(rota));
+        } catch (Exception e) {
+            return null;
+        }
     }
 
     private synchronized void payDriver(String destino, double valor) {

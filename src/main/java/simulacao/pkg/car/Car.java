@@ -1,7 +1,6 @@
 package simulacao.pkg.car;
 
 import de.tudresden.sumo.cmd.Vehicle;
-//mport de.tudresden.sumo.objects.SumoPosition2D;
 import de.tudresden.sumo.objects.SumoStringList;
 import it.polito.appeal.traci.SumoTraciConnection;
 import simulacao.EnvSimulator;
@@ -18,17 +17,26 @@ public class Car extends Vehicle implements Runnable {
     private Route route;
     private boolean passoExutado;
     private boolean cadastrou;
-     private DataCar carData;
+    private DataCar carData;
+    private double fuelTank;
+    private boolean abastecendo;
 
-    public Car(String idDriver) {
+    private final Object lockAbastece;
+
+    public Car(String idDriver, Object lockAbastece) {
+
+        this.lockAbastece = lockAbastece;
 
         synchronized (lock) {
             qtdCars += 1;
             idCar = "car" + qtdCars;
         }
-        this.sumo = EnvSimulator.getSumo();       
+        this.sumo = EnvSimulator.getSumo();
+
+        fuelTank = 10;
 
         cadastrou = false;
+        abastecendo = false;
 
     }
 
@@ -42,12 +50,11 @@ public class Car extends Vehicle implements Runnable {
             while (!route.acabou()) {
 
                 if (EnvSimulator.getExecutarPasso()) {
-
                     if (!passoExutado) {
                         executarPasso();
+                        EnvSimulator.passoExecutado();
                         passoExutado = true;
                     }
-
                 }
 
                 else {
@@ -65,21 +72,44 @@ public class Car extends Vehicle implements Runnable {
         }
 
         finally {
-            System.out.printf("%s finalizada\n", route.getIdRoute());
-            cadastrou = false;
-            route = null;
+            synchronized (lockAbastece) {
+                System.out.printf("%s finalizada\n", route.getIdRoute());
+                cadastrou = false;
+                route = null;
+                lockAbastece.notifyAll();
+            }
         }
 
     }
 
     private synchronized void executarPasso() {
-        atualizaSensores();
 
-        if (cadastrou && !route.acabou()) {
-            EnvSimulator.passoExecutado();
-            //System.out.println("passo " + idCar + " sensor atulizado");
+        SumoStringList carList;
+        try {
+            carList = (SumoStringList) sumo.do_job_get(getIDList());
+
+            if (carList.contains(idCar)) {
+                atualizaSensores();
+
+                if (this.fuelTank < 3) {
+                    if (!abastecendo) {
+                        sumo.do_job_set(setSpeed(idCar, 0));
+                        abastecendo = true;
+                        System.out.println("Abastecendo " + idCar);
+                        synchronized (lockAbastece) {
+                            lockAbastece.notifyAll();
+                        }
+                    }
+                }
+            }
+
+            else if (cadastrou) {
+                route.finish();
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
         }
-
     }
 
     private synchronized void casdastrar() {
@@ -119,47 +149,28 @@ public class Car extends Vehicle implements Runnable {
     private synchronized void atualizaSensores() {
         try {
 
-            SumoStringList carList = (SumoStringList) sumo.do_job_get(getIDList());            
+            cadastrou = true;
+            double speed = (double) sumo.do_job_get(getSpeed(idCar));
+            double distancia = (double) sumo.do_job_get(getDistance(idCar));
+            double consumo = (double) sumo.do_job_get(getFuelConsumption(idCar));
+            double co2 = (double) sumo.do_job_get(getCO2Emission(idCar));
+            SumoPosition2D posicao2D = (SumoPosition2D) sumo.do_job_get(getPosition(idCar));
+            carData.setSpeed(speed);
+            carData.setDistancia(distancia / 1000); // converte para quilometros
+            carData.setFuelConsumption(consumo / 150000); // Denisida da gosolina - aproxamente 750g/L
+            carData.setCo2Emission(co2);
+            carData.setLongitude(posicao2D.x);
+            carData.setLatitude(posicao2D.x);
+            carData.setTimestamp();
 
-            if (carList.contains(idCar)) {
-                cadastrou = true;
-                double speed = (double) sumo.do_job_get(getSpeed(idCar));
-                double distancia = (double) sumo.do_job_get(getDistance(idCar));
-                double consumo = (double) sumo.do_job_get(getFuelConsumption(idCar));
-                double co2 = (double) sumo.do_job_get(getCO2Emission(idCar));
-                SumoPosition2D posicao2D = (SumoPosition2D) sumo.do_job_get(getPosition(idCar));
-                carData.setSpeed(speed);
-                carData.setDistancia(distancia/1000);
-                carData.setFuelConsumption(consumo);
-                carData.setCo2Emission(co2);
-                carData.setLongitude(posicao2D.x);
-                carData.setLatitude(posicao2D.x);
-                carData.setTimestamp();
-            }
-
-            else if (cadastrou) {
-                route.finish();
-                EnvSimulator.passoExecutado(); 
-                carData.setLastDistancia();
-                //System.out.println("passo " + idCar + " rota finalizada");              
-            }
-
-            else {
-                EnvSimulator.passoExecutado();
-                //System.out.println("passo " + idCar + " não cadastrado");
-            }
-
-            // System.out.print(a + " |");
+            this.fuelTank -= consumo / 150000;
 
         }
 
-        catch (Exception e) {
+        catch (
+
+        Exception e) {
             e.printStackTrace();
-            try {
-                Thread.sleep(10000);
-            } catch (Exception ex) {
-                // TODO: handle exception
-            }
         }
 
     }
@@ -181,6 +192,27 @@ public class Car extends Vehicle implements Runnable {
 
     public void setCarData(DataCar carData) {
         this.carData = carData;
+    }
+
+    public boolean getAbastecendo() {
+        return abastecendo;
+    }
+
+    public void abatecer(double litros) {
+        fuelTank += litros;
+
+        synchronized (lockAbastece) {
+            this.abastecendo = false;
+            lockAbastece.notifyAll();
+
+            System.out.println("Fim abstecimento " + idCar) ;
+
+            try {
+                sumo.do_job_set(setSpeed(idCar, -1.0));
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+        }
     }
 
 }

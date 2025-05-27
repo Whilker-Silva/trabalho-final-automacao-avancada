@@ -6,10 +6,11 @@ import it.polito.appeal.traci.SumoTraciConnection;
 import simulacao.pkg.banco.AlphaBank;
 import simulacao.pkg.company.Company;
 import simulacao.pkg.driver.Driver;
+import simulacao.pkg.fuelStation.FuelStation;
 
 public class EnvSimulator extends Thread {
 
-	private static final int QTD_DRIVERS = 10;
+	private static final int QTD_DRIVERS = 100;
 	private static final int stepTime = 50;
 
 	private static Object lock = new Object();
@@ -31,6 +32,8 @@ public class EnvSimulator extends Thread {
 
 		AlphaBank.getInstancia().start();
 		Company.getInstance().start();
+		FuelStation.getInstance().start();
+		
 
 		listaDrivers = new Driver[QTD_DRIVERS];
 		for (int i = 0; i < QTD_DRIVERS; i++) {
@@ -63,7 +66,7 @@ public class EnvSimulator extends Thread {
 					long timeout = 100;
 					while (carReady < respostas) {
 						lock.wait();
-						if(System.currentTimeMillis() - start > timeout){
+						if (System.currentTimeMillis() - start > timeout) {
 							carReady = respostas;
 						}
 					}
