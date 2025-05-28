@@ -223,11 +223,7 @@ public class Company extends Thread {
             return null;
         }
     }
-
-    private synchronized void payDriver(String destino, double valor) {
-        botPayment.solicitarTransferencia(destino, valor, senha);
-    }
-
+   
     private void adicionarDados(DataCar dataCar) {
         synchronized (lockData) {
             filaDedados.add(dataCar);

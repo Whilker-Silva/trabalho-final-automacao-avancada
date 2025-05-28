@@ -24,6 +24,7 @@ public class Driver extends Thread {
     private BotPayment botPayment;
     private Car car;
     private DataCar carData;
+    private Thread dataThread;
 
     private final Queue<Route> rotasExecutar;
     private final ArrayList<Route> rotasExecutando;
@@ -41,7 +42,7 @@ public class Driver extends Thread {
         Company.getInstance().addCar(car);
 
         this.carData = new DataCar(car.getIdCar(), login);
-        Thread dataThread = new Thread(carData);
+        dataThread = new Thread(carData);
         dataThread.setName("data_" + car.getIdCar());
         dataThread.start();
 
@@ -121,8 +122,8 @@ public class Driver extends Thread {
 
         // System.out.printf("%s encerrado\n", login);
         botPayment.closeSocket();
-        car.closeSocket();
-
+        carData.closeSocket();
+        dataThread.interrupt();
 
     }
 

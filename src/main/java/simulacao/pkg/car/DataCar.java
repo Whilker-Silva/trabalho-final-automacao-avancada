@@ -178,8 +178,7 @@ public class DataCar implements Runnable {
         this.timestamp = System.nanoTime();
     }
 
-    public void closeSocket() {
-        viva = false;
-        clienteCar.closeSocket();        
+    public void closeSocket() {        
+        clienteCar.closeSocket();               
     }
 }

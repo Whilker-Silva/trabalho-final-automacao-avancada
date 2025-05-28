@@ -95,17 +95,17 @@ public class Car extends Vehicle implements Runnable {
                     if (!abastecendo) {
                         sumo.do_job_set(setSpeed(idCar, 0));
                         abastecendo = true;
-                        
+
                         synchronized (lockAbastece) {
                             lockAbastece.notifyAll();
                         }
                     }
-                } else if (carData.getSpeed() == 0){
+                } else if (carData.getSpeed() == 0) {
 
                     synchronized (lockAbastece) {
                         this.abastecendo = false;
                         sumo.do_job_set(setSpeed(idCar, -1));
-                        lockAbastece.notifyAll();                        
+                        lockAbastece.notifyAll();
                     }
                 }
             }
@@ -169,9 +169,6 @@ public class Car extends Vehicle implements Runnable {
             carData.setLongitude(posicao2D.x);
             carData.setLatitude(posicao2D.x);
             carData.setTimestamp();
-
-            this.fuelTank -= consumo / 150000;
-
         }
 
         catch (
@@ -210,13 +207,8 @@ public class Car extends Vehicle implements Runnable {
         System.out.println("Fim abstecimento " + idCar);
     }
 
-
     public double getFuelTank() {
         return fuelTank;
-    }
-
-    public void closeSocket(){
-        carData.closeSocket();
     }
 
 }
