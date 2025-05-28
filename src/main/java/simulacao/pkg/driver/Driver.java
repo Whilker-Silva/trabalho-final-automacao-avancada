@@ -123,8 +123,6 @@ public class Driver extends Thread {
         // System.out.printf("%s encerrado\n", login);
         botPayment.closeSocket();
         carData.closeSocket();
-        dataThread.interrupt();
-
     }
 
     private void solicitaRota() {

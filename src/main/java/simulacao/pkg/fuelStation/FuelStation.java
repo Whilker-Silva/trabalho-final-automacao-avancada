@@ -122,7 +122,6 @@ public class FuelStation extends Thread {
 
     public void shutdown(){
         botPayment.closeSocket();
-        interrupt();
     }
 
 }

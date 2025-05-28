@@ -71,11 +71,6 @@ public class EnvSimulator extends Thread {
 						}
 					}
 
-					// sleep(100);
-
-					// System.out.println("");
-					// System.out.println("");
-
 					executarPasso = false;
 				}
 

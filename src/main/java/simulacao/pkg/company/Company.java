@@ -223,7 +223,7 @@ public class Company extends Thread {
             return null;
         }
     }
-   
+
     private void adicionarDados(DataCar dataCar) {
         synchronized (lockData) {
             filaDedados.add(dataCar);
