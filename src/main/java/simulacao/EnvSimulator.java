@@ -82,8 +82,10 @@ public class EnvSimulator extends Thread {
 			}
 
 			System.out.println("\nRotas executadas com sucesso!\n");
+
 			Company.getInstance().shutdown();
 			AlphaBank.getInstancia().shutdown();
+			FuelStation.getInstance().shutdown();
 			sumo.close();
 		}
 

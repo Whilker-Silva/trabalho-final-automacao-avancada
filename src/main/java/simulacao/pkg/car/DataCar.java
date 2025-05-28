@@ -26,6 +26,7 @@ public class DataCar implements Runnable {
     private boolean solicitarPagamento;
 
     private transient Cliente clienteCar;
+    private boolean viva;
 
     /**
      * 
@@ -54,13 +55,13 @@ public class DataCar implements Runnable {
         odometro = 0;
 
         solicitarPagamento = false;
+        viva = true;
     }
 
     @Override
     public void run() {
-
-        try {
-            while (clienteCar.socketIsConnected()) {
+        while (this.viva) {
+            try {
 
                 while (timestamp == lastTimestamp) {
                     Thread.sleep(0, 100);
@@ -78,12 +79,12 @@ public class DataCar implements Runnable {
                 String msg = Json.toJson(this);
                 clienteCar.enviaMensagem(msg);
                 lastTimestamp = timestamp;
+
             }
 
-        }
-
-        catch (Exception e) {
-            e.printStackTrace();
+            catch (Exception e) {
+                e.printStackTrace();
+            }
         }
 
     }
@@ -175,5 +176,10 @@ public class DataCar implements Runnable {
 
     public void setTimestamp() {
         this.timestamp = System.nanoTime();
+    }
+
+    public void closeSocket() {
+        viva = false;
+        clienteCar.closeSocket();        
     }
 }

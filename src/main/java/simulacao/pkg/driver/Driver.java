@@ -48,7 +48,7 @@ public class Driver extends Thread {
         car.setCarData(carData);
 
         try {
-            botPayment = new BotPayment(login, senha, 1000);
+            botPayment = new BotPayment(login, senha, 10);
             botPayment.start();
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -121,6 +121,8 @@ public class Driver extends Thread {
 
         // System.out.printf("%s encerrado\n", login);
         botPayment.closeSocket();
+        car.closeSocket();
+
 
     }
 
@@ -139,10 +141,21 @@ public class Driver extends Thread {
     }
 
     public void abastecer() {
-        double litros = 1; // calcular
-        double valor = litros * 5.87;
+
+        double litros;
+        double valor;
+
+        double capacidade = (10 - car.getFuelTank());
+        if ((capacidade * 5.87) < botPayment.getSaldo()) {
+            litros = capacidade;
+            valor = litros * 5.87;
+        } else {
+            valor = botPayment.getSaldo();
+            litros = valor / 5.87;
+        }
+
         FuelStation.abastecer(car, litros);
-        //botPayment.solicitarTransferencia("fuelStation", valor, senha);
+        botPayment.solicitarTransferencia("fuel-station", valor, senha);        
     }
 
     public String getLogin() {
