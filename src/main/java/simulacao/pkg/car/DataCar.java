@@ -46,7 +46,7 @@ public class DataCar implements Runnable {
         try {
             Thread.sleep(5);
         } catch (Exception e) {
-            // TODO: handle exception
+            e.printStackTrace();
         }
 
         timestamp = 0;
