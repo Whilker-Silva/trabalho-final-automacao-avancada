@@ -1,9 +1,16 @@
 package simulacao.pkg.company;
 
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
+
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import simulacao.pkg.banco.BotPayment;
 import simulacao.pkg.car.Car;
@@ -30,12 +37,16 @@ public class Company extends Thread {
     private final Queue<DataCar> filaDedados;
 
     private final Queue<Route> rotasExecutar;
-    private final ArrayList<Route> rotasExecutando;
+    private final HashMap<String, Route> rotasExecutando;
     private final ArrayList<Route> rotasExecutadas;
 
     private final Object lockData = new Object();
     private final Object lockRotas = new Object();
     private final Object lockcar = new Object();
+
+    private Workbook workbook;
+    private Sheet sheet;
+    private int rowNum;
 
     /**
      * Método que criar um instancia única para a classe {@code Company}
@@ -89,10 +100,29 @@ public class Company extends Thread {
 
         // Inicializa lista de rotas (A executar, execuntado e executadas)
         rotasExecutar = new LinkedList<>();
-        rotasExecutando = new ArrayList<>();
+        rotasExecutando = new HashMap<>();
         rotasExecutadas = new ArrayList<>();
 
-        this.importarRotas(200);
+        this.importarRotas(2);
+
+        // criando planilha para coleta de dados
+        workbook = new XSSFWorkbook();
+        sheet = workbook.createSheet("Dados_carros");
+        Row headerRow = sheet.createRow(0);
+
+        headerRow.createCell(0).setCellValue("Timestamp");
+        headerRow.createCell(1).setCellValue("ID Car");
+        headerRow.createCell(2).setCellValue("ID Car");
+        headerRow.createCell(3).setCellValue("ID Route");
+        headerRow.createCell(4).setCellValue("Speed");
+        headerRow.createCell(5).setCellValue("Distance");
+        headerRow.createCell(6).setCellValue("Fuel Consumption");
+        headerRow.createCell(7).setCellValue("Fuel Type");
+        headerRow.createCell(8).setCellValue("CO2 emission");
+        headerRow.createCell(9).setCellValue("Longitude");
+        headerRow.createCell(10).setCellValue("Latitude");
+
+        rowNum = 1;
     }
 
     @Override
@@ -107,17 +137,13 @@ public class Company extends Thread {
                             break;
                         }
                         lockData.wait();
-
-                        processarMsg(filaDedados.poll());
-
                     }
-
-                    dataCar = filaDedados.poll();
                 }
 
+                dataCar = filaDedados.poll();
+
                 if (dataCar != null) {
-                    // TODO processar dados enviados pelos CARS
-                    // payDriver(dataCar.getIdDriver(), 3.85);
+                    processarMsg(dataCar);
                 }
 
             }
@@ -126,14 +152,50 @@ public class Company extends Thread {
                 System.err.println("Erro ao processar transação: " + e.getMessage());
             }
         }
+
+        // Salva em arquivo
+        try (FileOutputStream outputStream = new FileOutputStream("Dados_carros.xlsx")) {
+            workbook.write(outputStream);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            workbook.close();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        System.out.println("PLANILHA SALVA COM SUCESSO");
     }
 
     private void processarMsg(DataCar dados) {
 
-        if (dados != null) {
-            if (dados.getPagamento()) {
-                botPayment.solicitarTransferencia(dados.getIdDriver(), 3.25, senha);
-            }
+        if (dados.getPagamento()) {
+            botPayment.solicitarTransferencia(dados.getIdDriver(), 3.25, senha);
+        }
+
+        if (dados.rotaFinalizada()) {
+            String idRoute = dados.getIdRoute();
+            Route aux = removeRotasExecutando(idRoute);
+            addRotasExecutadas(aux);
+        }
+
+        Row row = sheet.createRow(rowNum++);
+        row.createCell(0).setCellValue(dados.getTimestamp());
+        row.createCell(1).setCellValue(dados.getIdCar());
+        row.createCell(2).setCellValue(dados.getIdDriver());
+        row.createCell(3).setCellValue(dados.getIdRoute());
+        row.createCell(4).setCellValue(dados.getSpeed());
+        row.createCell(5).setCellValue(dados.getDistancia());
+        row.createCell(6).setCellValue(dados.getFuelConsumption());
+        row.createCell(7).setCellValue(dados.getCombustivel());
+        row.createCell(8).setCellValue(dados.getCo2Emission());
+        row.createCell(9).setCellValue(dados.getLongitude());
+        row.createCell(10).setCellValue(dados.getLatitude());
+
+        for (int i = 0; i <= 10; i++) {
+            sheet.autoSizeColumn(i);
         }
 
     }
@@ -181,7 +243,7 @@ public class Company extends Thread {
 
     private void addRotasExecutando(Route route) {
         synchronized (lockRotas) {
-            rotasExecutando.addLast(route);
+            rotasExecutando.put(route.getIdRoute(), route);
         }
     }
 
@@ -197,9 +259,9 @@ public class Company extends Thread {
         }
     }
 
-    private Route removeRotasExecutando(int index) {
+    private Route removeRotasExecutando(String idRoute) {
         synchronized (lockRotas) {
-            return rotasExecutando.get(index);
+            return rotasExecutando.remove(idRoute);
         }
     }
 

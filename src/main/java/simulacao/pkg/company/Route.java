@@ -25,7 +25,7 @@ public class Route {
 			}
 
 			this.idRoute = "route" + idRoute;
-			extairEdges(idRoute);
+			extairEdges(1);
 			this.acabou = false;
 		}
 

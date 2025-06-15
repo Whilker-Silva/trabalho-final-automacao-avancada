@@ -1,5 +1,6 @@
 package simulacao.pkg.car;
 
+import simulacao.pkg.company.Company;
 import simulacao.pkg.company.Route;
 import utils.Cliente;
 import utils.Json;
@@ -23,10 +24,10 @@ public class DataCar implements Runnable {
     private double latitude;
     private double longitude;
 
-    private boolean solicitarPagamento;
+    private boolean fimRota;
 
+    private boolean solicitarPagamento;
     private transient Cliente clienteCar;
-    private boolean viva;
 
     /**
      * 
@@ -55,15 +56,16 @@ public class DataCar implements Runnable {
         odometro = 0;
 
         solicitarPagamento = false;
-        viva = true;
+        fimRota = false;
+
     }
 
     @Override
     public void run() {
-        while (this.viva) {
+        while (Company.getInstance().isAlive()) {
             try {
 
-                while (timestamp == lastTimestamp) {
+                while (timestamp == lastTimestamp && Company.getInstance().isAlive()) {
                     Thread.sleep(0, 100);
                 }
 
@@ -137,8 +139,12 @@ public class DataCar implements Runnable {
         return route.getIdRoute();
     }
 
-    public boolean rotaAcabou() {
-        return route.acabou();
+    public void rotaAcabou() {
+        fimRota = true;
+        String msg = Json.toJson(this);
+        clienteCar.enviaMensagem(msg);
+
+        fimRota = false;
     }
 
     public void setSpeed(double speed) {
@@ -178,7 +184,11 @@ public class DataCar implements Runnable {
         this.timestamp = System.nanoTime();
     }
 
-    public void closeSocket() {        
-        clienteCar.closeSocket();               
+    public void closeSocket() {
+        clienteCar.closeSocket();
+    }
+
+    public boolean rotaFinalizada() {
+        return fimRota;
     }
 }

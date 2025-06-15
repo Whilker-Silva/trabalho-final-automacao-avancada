@@ -20,11 +20,8 @@ public class FuelStation extends Thread {
     private static final Semaphore bombas = new Semaphore(2);
     private static Object lockFila = new Object();
     private static Object lockHash = new Object();
-    private boolean viva;
 
     private FuelStation() {
-
-        
 
         login = "fuel-station";
         senha = "fuel-station";
@@ -40,8 +37,6 @@ public class FuelStation extends Thread {
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
-
-        viva = true;
     }
 
     public static FuelStation getInstance() {
@@ -53,32 +48,34 @@ public class FuelStation extends Thread {
 
     @Override
     public void run() {
-        while (viva) {
+        while (botPayment.isAlive()) {
             try {
 
                 synchronized (lockFila) {
-                    while (filaAbastecimento.isEmpty()) {
+                    while (filaAbastecimento.isEmpty() && botPayment.isAlive()) {
                         lockFila.wait();
                     }
                 }
 
-                bombas.acquire();
-                Car car = removeFila();
+                if (botPayment.isAlive()) {
+                    bombas.acquire();
+                    Car car = removeFila();
 
-                new Thread(() -> {
-                    try {
-                        double litros = removeHash(car.getIdCar());
-                        System.out.printf("Abastecendo %.2f litros no %s\n", litros, car.getIdCar());
+                    new Thread(() -> {
+                        try {
+                            double litros = removeHash(car.getIdCar());
+                            System.out.printf("Abastecendo %.2f litros no %s\n", litros, car.getIdCar());
 
-                        Thread.sleep(12000); // simula o tempo de abastecimento de 2min (240 steps)
+                            Thread.sleep(12000); // simula o tempo de abastecimento de 2min (240 steps)
 
-                        car.abatecer(litros);
-                    } catch (InterruptedException e) {
-                        Thread.currentThread().interrupt();
-                    } finally {
-                        bombas.release(); // libera a bomba
-                    }
-                }).start();
+                            car.abatecer(litros);
+                        } catch (InterruptedException e) {
+                            Thread.currentThread().interrupt();
+                        } finally {
+                            bombas.release(); // libera a bomba
+                        }
+                    }).start();
+                }
 
             }
 
@@ -120,8 +117,11 @@ public class FuelStation extends Thread {
         addHash(car.getIdCar(), litros);
     }
 
-    public void shutdown(){
-        botPayment.closeSocket();
+    public void shutdown() {
+        synchronized (lockFila) {
+            botPayment.closeSocket();
+            lockFila.notifyAll();
+        }
     }
 
 }

@@ -5,6 +5,7 @@ import de.tudresden.sumo.objects.SumoStringList;
 import it.polito.appeal.traci.SumoTraciConnection;
 import simulacao.EnvSimulator;
 import simulacao.pkg.company.Route;
+import de.tudresden.sumo.objects.SumoColor;
 import de.tudresden.sumo.objects.SumoPosition2D;
 
 public class Car extends Vehicle implements Runnable {
@@ -74,6 +75,7 @@ public class Car extends Vehicle implements Runnable {
         finally {
             synchronized (lockAbastece) {
                 System.out.printf("%s finalizada\n", route.getIdRoute());
+                carData.rotaAcabou();
                 cadastrou = false;
                 route = null;
                 lockAbastece.notifyAll();
@@ -125,7 +127,7 @@ public class Car extends Vehicle implements Runnable {
             SumoStringList carList = (SumoStringList) sumo.do_job_get(getIDList());
             while (carList.contains(idCar)) {
                 carList = (SumoStringList) sumo.do_job_get(getIDList());
-                Thread.sleep(10);
+                Thread.sleep(2);
             }
 
             sumo.do_job_set(de.tudresden.sumo.cmd.Route.add(route.getIdRoute(), route.getEdges()));
@@ -146,6 +148,9 @@ public class Car extends Vehicle implements Runnable {
                     1, // personCapacity
                     1) // personNumber
             );
+
+            SumoColor red = new SumoColor(38, 235, 12, 255); // RGBA: vermelho
+            sumo.do_job_set(Vehicle.setColor(idCar, red));
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -188,6 +193,7 @@ public class Car extends Vehicle implements Runnable {
 
     public void setRoute(Route route) {
         this.route = route;
+        carData.setRoute(route);
     }
 
     public String getIdCar() {

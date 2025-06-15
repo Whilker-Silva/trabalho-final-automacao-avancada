@@ -10,7 +10,7 @@ import simulacao.pkg.fuelStation.FuelStation;
 
 public class EnvSimulator extends Thread {
 
-	private static final int QTD_DRIVERS = 100;
+	private static final int QTD_DRIVERS = 1;
 	private static final int stepTime = 50;
 
 	private static Object lock = new Object();
