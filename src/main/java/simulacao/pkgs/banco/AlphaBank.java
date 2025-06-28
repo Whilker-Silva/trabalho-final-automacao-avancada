@@ -1,4 +1,4 @@
-package simulacao.pkg.banco;
+package simulacao.pkgs.banco;
 
 import utils.Server;
 

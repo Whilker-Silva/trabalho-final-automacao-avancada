@@ -1,10 +1,10 @@
-package simulacao.pkg.car;
+package simulacao.pkgs.car;
 
 import de.tudresden.sumo.cmd.Vehicle;
 import de.tudresden.sumo.objects.SumoStringList;
 import it.polito.appeal.traci.SumoTraciConnection;
 import simulacao.EnvSimulator;
-import simulacao.pkg.company.Route;
+import simulacao.pkgs.company.Route;
 import de.tudresden.sumo.objects.SumoColor;
 import de.tudresden.sumo.objects.SumoPosition2D;
 

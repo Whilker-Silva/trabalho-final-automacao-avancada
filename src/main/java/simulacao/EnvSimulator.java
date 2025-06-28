@@ -3,10 +3,10 @@ package simulacao;
 import java.io.IOException;
 
 import it.polito.appeal.traci.SumoTraciConnection;
-import simulacao.pkg.banco.AlphaBank;
-import simulacao.pkg.company.Company;
-import simulacao.pkg.driver.Driver;
-import simulacao.pkg.fuelStation.FuelStation;
+import simulacao.pkgs.banco.AlphaBank;
+import simulacao.pkgs.company.Company;
+import simulacao.pkgs.driver.Driver;
+import simulacao.pkgs.fuelStation.FuelStation;
 
 public class EnvSimulator extends Thread {
 

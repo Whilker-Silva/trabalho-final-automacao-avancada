@@ -1,15 +1,15 @@
-package simulacao.pkg.driver;
+package simulacao.pkgs.driver;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.Queue;
 
-import simulacao.pkg.banco.BotPayment;
-import simulacao.pkg.car.Car;
-import simulacao.pkg.car.DataCar;
-import simulacao.pkg.company.Company;
-import simulacao.pkg.company.Route;
-import simulacao.pkg.fuelStation.FuelStation;
+import simulacao.pkgs.banco.BotPayment;
+import simulacao.pkgs.car.Car;
+import simulacao.pkgs.car.DataCar;
+import simulacao.pkgs.company.Company;
+import simulacao.pkgs.company.Route;
+import simulacao.pkgs.fuelStation.FuelStation;
 import utils.Crypto;
 import utils.Json;
 

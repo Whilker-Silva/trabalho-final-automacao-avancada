@@ -1,12 +1,12 @@
-package simulacao.pkg.fuelStation;
+package simulacao.pkgs.fuelStation;
 
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Queue;
 import java.util.concurrent.Semaphore;
 
-import simulacao.pkg.banco.BotPayment;
-import simulacao.pkg.car.Car;
+import simulacao.pkgs.banco.BotPayment;
+import simulacao.pkgs.car.Car;
 
 public class FuelStation extends Thread {
 

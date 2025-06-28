@@ -1,7 +1,7 @@
-package simulacao.pkg.car;
+package simulacao.pkgs.car;
 
-import simulacao.pkg.company.Company;
-import simulacao.pkg.company.Route;
+import simulacao.pkgs.company.Company;
+import simulacao.pkgs.company.Route;
 import utils.Cliente;
 import utils.Json;
 

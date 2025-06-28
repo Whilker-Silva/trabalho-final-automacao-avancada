@@ -1,4 +1,4 @@
-package simulacao.pkg.company;
+package simulacao.pkgs.company;
 
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -12,9 +12,9 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
-import simulacao.pkg.banco.BotPayment;
-import simulacao.pkg.car.Car;
-import simulacao.pkg.car.DataCar;
+import simulacao.pkgs.banco.BotPayment;
+import simulacao.pkgs.car.Car;
+import simulacao.pkgs.car.DataCar;
 import utils.Crypto;
 import utils.Json;
 import utils.Server;
