@@ -7,7 +7,7 @@ public class Principal {
         try {
 
             /* Simulão para realizar a reconcilição de dados */
-            EnvSimulator ev = new EnvSimulator(1, 1, true, true);
+            EnvSimulator ev = new EnvSimulator(1, 10, true, true);
 
             /* Simulação com 100 drivers e 200 rotas */
             // EnvSimulator ev = new EnvSimulator(100, 200,false, false);
