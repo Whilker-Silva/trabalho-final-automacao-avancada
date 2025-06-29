@@ -5,7 +5,13 @@ public class Principal {
     public static void main(String[] args) {
 
         try {
-            EnvSimulator ev = new EnvSimulator();
+
+            /* Simulão para realizar a reconcilição de dados */
+            EnvSimulator ev = new EnvSimulator(1, 1, true, true);
+
+            /* Simulação com 100 drivers e 200 rotas */
+            // EnvSimulator ev = new EnvSimulator(100, 200,false, false);
+
             ev.start();
             ev.join();
         }

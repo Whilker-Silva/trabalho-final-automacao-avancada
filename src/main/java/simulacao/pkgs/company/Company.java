@@ -45,7 +45,7 @@ public class Company extends Thread {
     private final Object lockcar = new Object();
 
     private Workbook workbook;
-    private Sheet sheet;
+    private Sheet sheetCars;
     private int rowNum;
 
     /**
@@ -57,7 +57,15 @@ public class Company extends Thread {
      */
     public static synchronized Company getInstance() {
         if (instancia == null) {
-            instancia = new Company("company", "company");
+            throw new IllegalStateException(
+                    "A instância da Company ainda não foi inicializada.\nutilize 'getInstance(int qtdRotas)'");
+        }
+        return instancia;
+    }
+
+    public static synchronized Company getInstance(int qtdRotas) {
+        if (instancia == null) {
+            instancia = new Company("company", "company", qtdRotas);
         }
         return instancia;
     }
@@ -68,7 +76,7 @@ public class Company extends Thread {
      * @param login - Login da conta no AlphaBank
      * @param senha - Senha da conta no AlphaBank
      */
-    private Company(String login, String senha) {
+    private Company(String login, String senha, int qtdRotas) {
         setName("company");
         this.login = login;
         this.senha = senha;
@@ -103,16 +111,16 @@ public class Company extends Thread {
         rotasExecutando = new HashMap<>();
         rotasExecutadas = new ArrayList<>();
 
-        this.importarRotas(2);
+        this.importarRotas(qtdRotas);
 
         // criando planilha para coleta de dados
         workbook = new XSSFWorkbook();
-        sheet = workbook.createSheet("Dados_carros");
-        Row headerRow = sheet.createRow(0);
+        sheetCars = workbook.createSheet("Dados_carros");
+        Row headerRow = sheetCars.createRow(0);
 
         headerRow.createCell(0).setCellValue("Timestamp");
         headerRow.createCell(1).setCellValue("ID Car");
-        headerRow.createCell(2).setCellValue("ID Car");
+        headerRow.createCell(2).setCellValue("ID Driver");
         headerRow.createCell(3).setCellValue("ID Route");
         headerRow.createCell(4).setCellValue("Speed");
         headerRow.createCell(5).setCellValue("Distance");
@@ -127,34 +135,41 @@ public class Company extends Thread {
 
     @Override
     public void run() {
-        while (serverCompany.isAlive()) {
-            try {
-                DataCar dataCar = null;
+        while (true) {
+            DataCar dataCar = null;
 
-                synchronized (lockData) {
-                    while (filaDedados.isEmpty()) {
-                        if (!serverCompany.isAlive()) {
-                            break;
-                        }
+            synchronized (lockData) {
+                while (filaDedados.isEmpty()) {
+                    if (!serverCompany.isAlive()) {
+                        // Nada mais para processar
+                        finalizarExecucao();
+                        return;
+                    }
+                    try {
                         lockData.wait();
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
 
+                // Agora com certeza há algo na fila
                 dataCar = filaDedados.poll();
+            }
 
+            try {
                 if (dataCar != null) {
                     processarMsg(dataCar);
+                    coletarDadosReconcialicao(); // se quiser manter aqui
                 }
-
-            }
-
-            catch (Exception e) {
-                System.err.println("Erro ao processar transação: " + e.getMessage());
+            } catch (Exception e) {
+                System.err.println("Erro ao processar mensagem: " + e.getMessage());
             }
         }
+    }
 
-        // Salva em arquivo
-        try (FileOutputStream outputStream = new FileOutputStream("Dados_carros.xlsx")) {
+    private void finalizarExecucao() {
+        
+        try (FileOutputStream outputStream = new FileOutputStream("data/Dados_carros.xlsx")) {
             workbook.write(outputStream);
         } catch (IOException e) {
             e.printStackTrace();
@@ -166,7 +181,7 @@ public class Company extends Thread {
             e.printStackTrace();
         }
 
-        System.out.println("PLANILHA SALVA COM SUCESSO");
+        System.out.println("\nPLANILHA SALVA COM SUCESSO!");
     }
 
     private void processarMsg(DataCar dados) {
@@ -181,7 +196,7 @@ public class Company extends Thread {
             addRotasExecutadas(aux);
         }
 
-        Row row = sheet.createRow(rowNum++);
+        Row row = sheetCars.createRow(rowNum++);
         row.createCell(0).setCellValue(dados.getTimestamp());
         row.createCell(1).setCellValue(dados.getIdCar());
         row.createCell(2).setCellValue(dados.getIdDriver());
@@ -191,12 +206,12 @@ public class Company extends Thread {
         row.createCell(6).setCellValue(dados.getFuelConsumption());
         row.createCell(7).setCellValue(dados.getCombustivel());
         row.createCell(8).setCellValue(dados.getCo2Emission());
-        row.createCell(9).setCellValue(dados.getLongitude());
-        row.createCell(10).setCellValue(dados.getLatitude());
+        row.createCell(9).setCellValue(dados.getLatitude());
+        row.createCell(10).setCellValue(dados.getLongitude());
 
-        for (int i = 0; i <= 10; i++) {
-            sheet.autoSizeColumn(i);
-        }
+    }
+
+    private void coletarDadosReconcialicao() {
 
     }
 
@@ -204,6 +219,7 @@ public class Company extends Thread {
      * Metodo que desliga o servidor do banco e encerra a Thread
      */
     public void shutdown() {
+
         synchronized (lockData) {
             try {
                 botPayment.closeSocket();
@@ -277,9 +293,9 @@ public class Company extends Thread {
 
     public synchronized String getRoute() {
         Route rota = removeRotasExecutar();
-        addRotasExecutando(rota);
 
         try {
+            addRotasExecutando(rota);
             return Crypto.criptografar(Json.toJson(rota));
         } catch (Exception e) {
             return null;

@@ -10,7 +10,7 @@ import simulacao.pkgs.fuelStation.FuelStation;
 
 public class EnvSimulator extends Thread {
 
-	private static final int QTD_DRIVERS = 1;
+	private int qtdDrivres;
 	private static final int stepTime = 50;
 
 	private static Object lock = new Object();
@@ -18,12 +18,16 @@ public class EnvSimulator extends Thread {
 	private Driver[] listaDrivers;
 	private static int carReady;
 	private static boolean executarPasso;
+	private static boolean rotaUnica;
 
-	public EnvSimulator() {
+	public EnvSimulator(int qtdDrivres, int qtdRotas, boolean transito, boolean rotaUnica) {
 		setName("simulador");
 
+		this.qtdDrivres = qtdDrivres;
+		EnvSimulator.rotaUnica = rotaUnica;
+
 		String sumoBin = "sumo-gui";
-		String configFile = "map/map.sumo.cfg";
+		String configFile = transito? "map/map.sumo.cfg" :"map/map.sumoSemTransito.cfg";
 
 		sumo = new SumoTraciConnection(sumoBin, configFile);
 		sumo.addOption("start", "1"); // auto-run on GUI show
@@ -31,12 +35,12 @@ public class EnvSimulator extends Thread {
 		sumo.addOption("step-length", "0.5");
 
 		AlphaBank.getInstancia().start();
-		Company.getInstance().start();
+		Company.getInstance(qtdRotas).start();
 		FuelStation.getInstance().start();
 		
 
-		listaDrivers = new Driver[QTD_DRIVERS];
-		for (int i = 0; i < QTD_DRIVERS; i++) {
+		listaDrivers = new Driver[qtdDrivres];
+		for (int i = 0; i < qtdDrivres; i++) {
 			String login = "driver" + (i + 1);
 			String senha = "driver" + (i + 1);
 			listaDrivers[i] = new Driver(login, senha);
@@ -49,7 +53,7 @@ public class EnvSimulator extends Thread {
 
 			sumo.runServer(12345);
 
-			for (int i = 0; i < QTD_DRIVERS; i++) {
+			for (int i = 0; i < qtdDrivres; i++) {
 				listaDrivers[i].start();
 			}
 
@@ -110,6 +114,10 @@ public class EnvSimulator extends Thread {
 
 	public static boolean getExecutarPasso() {
 		return executarPasso;
+	}
+
+	public static boolean getRotaUnica(){
+		return rotaUnica;
 	}
 
 }

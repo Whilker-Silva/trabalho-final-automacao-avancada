@@ -11,8 +11,8 @@ public class DataCar implements Runnable {
     private String idDriver;
     private String combustivel;
 
-    private long lastTimestamp;
-    private long timestamp;
+    private int lastTimestamp;
+    private int timestamp;
 
     private Route route;
     private double speed;
@@ -103,7 +103,7 @@ public class DataCar implements Runnable {
         return combustivel;
     }
 
-    public long getTimestamp() {
+    public int getTimestamp() {
         return timestamp;
     }
 
@@ -180,8 +180,8 @@ public class DataCar implements Runnable {
         this.route = route;
     }
 
-    public void setTimestamp() {
-        this.timestamp = System.nanoTime();
+    public void setTimestamp(int currentTime) {
+        this.timestamp = currentTime;
     }
 
     public void closeSocket() {

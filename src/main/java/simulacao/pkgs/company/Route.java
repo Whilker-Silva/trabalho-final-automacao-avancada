@@ -9,6 +9,7 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
 import de.tudresden.sumo.objects.SumoStringList;
+import simulacao.EnvSimulator;
 
 public class Route {
 
@@ -25,7 +26,7 @@ public class Route {
 			}
 
 			this.idRoute = "route" + idRoute;
-			extairEdges(1);
+			extairEdges(idRoute);
 			this.acabou = false;
 		}
 
@@ -43,10 +44,25 @@ public class Route {
 
 	private void extairEdges(int numberID) throws Exception {
 
-		Node nodeVehicle = nodeList.item(numberID - 1);
+		Node nodeVehicle;
+		Element elem;
+		Node nodeRoute;
 
-		Element elem = (Element) nodeVehicle;
-		Node nodeRoute = elem.getElementsByTagName("route").item(0);
+		// Protege contra índices inválidos
+		if (numberID < 1 || numberID > nodeList.getLength()) {
+			throw new IllegalArgumentException("ID de rota inválido: " + numberID);
+		}
+
+		if (EnvSimulator.getRotaUnica()) {
+			nodeVehicle = nodeList.item(0);
+		}
+
+		else {
+			nodeVehicle = nodeList.item(numberID - 1);
+		}
+
+		elem = (Element) nodeVehicle;
+		nodeRoute = elem.getElementsByTagName("route").item(0);
 		Element auxedges = (Element) nodeRoute;
 		String route = auxedges.getAttribute("edges");
 

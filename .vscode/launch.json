@@ -6,6 +6,20 @@
     "configurations": [
         {
             "type": "java",
+            "name": "Principal",
+            "request": "launch",
+            "mainClass": "reconciliacao.Principal",
+            "projectName": "trabalho-final-automacao-avancada"
+        },
+        {
+            "type": "java",
+            "name": "Reconciliacao",
+            "request": "launch",
+            "mainClass": "reconciliacao.Reconciliacao",
+            "projectName": "trabalho-final-automacao-avancada"
+        },
+        {
+            "type": "java",
             "name": "Current File",
             "request": "launch",
             "mainClass": "${file}"

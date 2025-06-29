@@ -8,7 +8,8 @@
     "editor.renderLineHighlight": "gutter",
     "editor.minimap.maxColumn": 80,
     "workbench.activityBar.iconClickBehavior": "toggle",
-    "workbench.activityBar.location": "default", 
-    "vsicons.customIconFolderPath": "C:/User/whilk/AppData/Roaming/Code/User/"   
-    
+    "workbench.activityBar.location": "default",
+    "vsicons.customIconFolderPath": "C:/User/whilk/AppData/Roaming/Code/User/",
+    "explorer.expandSingleFolderWorkspaces": true,
+    "explorer.fileNesting.enabled": false
 }

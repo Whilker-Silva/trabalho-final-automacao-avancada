@@ -1,5 +1,6 @@
 package simulacao.pkgs.car;
 
+import de.tudresden.sumo.cmd.Simulation;
 import de.tudresden.sumo.cmd.Vehicle;
 import de.tudresden.sumo.objects.SumoStringList;
 import it.polito.appeal.traci.SumoTraciConnection;
@@ -166,14 +167,18 @@ public class Car extends Vehicle implements Runnable {
             double distancia = (double) sumo.do_job_get(getDistance(idCar));
             double consumo = (double) sumo.do_job_get(getFuelConsumption(idCar));
             double co2 = (double) sumo.do_job_get(getCO2Emission(idCar));
-            SumoPosition2D posicao2D = (SumoPosition2D) sumo.do_job_get(getPosition(idCar));
+            SumoPosition2D posicao2D = (SumoPosition2D) sumo.do_job_get(getPosition(idCar));            
+            posicao2D = (SumoPosition2D) sumo.do_job_get(Simulation.convertGeo(posicao2D.x, posicao2D.y, false));
+            int currentTime = (int) sumo.do_job_get(Simulation.getCurrentTime());
+            
+
             carData.setSpeed(speed);
             carData.setDistancia(distancia / 1000); // converte para quilometros
-            carData.setFuelConsumption(consumo / 150000); // Denisida da gosolina - aproxamente 750g/L
+            carData.setFuelConsumption(consumo / 150000); // Denisidade da gosolina - aproxamente 750g/L
             carData.setCo2Emission(co2);
-            carData.setLongitude(posicao2D.x);
-            carData.setLatitude(posicao2D.x);
-            carData.setTimestamp();
+            carData.setLatitude(posicao2D.y);
+            carData.setLongitude(posicao2D.x);            
+            carData.setTimestamp(currentTime);
         }
 
         catch (

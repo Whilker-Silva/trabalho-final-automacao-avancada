@@ -126,15 +126,20 @@ public class Driver extends Thread {
     }
 
     private void solicitaRota() {
+        
         String rotaCriptografada = Company.getInstance().getRoute();
-        Route rota;
-        try {
-            rota = Json.fromJson(Crypto.descriptografar(rotaCriptografada), Route.class);
-            if (rota != null) {
-                addRotasExecutar(rota);
+
+        if (rotaCriptografada != null) {
+            
+            Route rota;
+            try {
+                rota = Json.fromJson(Crypto.descriptografar(rotaCriptografada), Route.class);
+                if (rota != null) {
+                    addRotasExecutar(rota);
+                }
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-        } catch (Exception e) {
-            e.printStackTrace();
         }
 
     }
@@ -154,7 +159,7 @@ public class Driver extends Thread {
         }
 
         FuelStation.abastecer(car, litros);
-        botPayment.solicitarTransferencia("fuel-station", valor, senha);        
+        botPayment.solicitarTransferencia("fuel-station", valor, senha);
     }
 
     public String getLogin() {
