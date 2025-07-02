@@ -12,7 +12,7 @@ public class Principal {
             // EnvSimulator ev = new EnvSimulator(1, 10, true, true);
 
             /* Simulação para com um unico carro e sem trasito */
-            EnvSimulator ev = new EnvSimulator(1, 1, false, false);
+            EnvSimulator ev = new EnvSimulator(1, 100, false, false);
 
             ev.start();
             ev.join();
